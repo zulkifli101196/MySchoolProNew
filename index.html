@@ -394,7 +394,6 @@
             <input type="text" id="siswa-search" class="form-control border-start-0" placeholder="Cari nama atau NIS..." onkeyup="currentPageMaster=1; renderPresensiSiswaTable()">
           </div>
         </div>
-        <!-- Filter Dropdown Unit Dinamis -->
         <div class="col-md-2">
           <select id="siswa-filter-unit" class="form-select form-select-sm" onchange="currentPageMaster=1; renderPresensiSiswaTable()">
             <option value="all">Semua Unit</option>
@@ -445,6 +444,127 @@
       </button>
     </div>
     <span id="siswa-page-info" class="small text-muted fw-bold"></span>
+  </div>
+</section>
+<!-- ======================================================== -->
+<!-- SECTION KONTEN SPP (Tempatkan di dalam main-content)    -->
+<!-- ======================================================== -->
+<section id="sc-spp" class="d-none">
+  <div class="container-fluid p-0">
+      
+      <!-- 1. PANEL INPUT ADMIN: Otomatis muncul hanya jika login sebagai Admin -->
+      <div id="panel-admin-spp" class="card shadow mb-4 d-none">
+          <div class="card-header bg-primary text-white">
+              <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Loket Pembayaran SPP (Admin)</h5>
+          </div>
+          <div class="card-body">
+              <form id="form-bayar-spp" onsubmit="handleBayarSPP(event)">
+                  <div class="row g-3">
+                      <div class="col-md-3">
+                          <label class="form-label fw-bold">NIS Siswa</label>
+                          <!-- Saat admin ketik NIS lalu tekan Tab/Enter, data siswa otomatis dicari -->
+                          <input type="text" id="spp-nis" class="form-control" placeholder="Ketik NIS & tekan Tab/Enter" required onchange="cariSiswaOtomatis()">
+                      </div>
+                      <div class="col-md-3">
+                          <label class="form-label">Nama Siswa</label>
+                          <input type="text" id="spp-nama" class="form-control" placeholder="..." required readonly>
+                      </div>
+                      <div class="col-md-3">
+                          <label class="form-label">Unit</label>
+                          <input type="text" id="spp-unit" class="form-control" placeholder="..." required readonly>
+                      </div>
+                      <div class="col-md-3">
+                          <label class="form-label">Kelas</label>
+                          <input type="text" id="spp-kelas" class="form-control" placeholder="..." required readonly>
+                      </div>
+                      <div class="col-md-4">
+                          <label class="form-label fw-bold">Bulan Tagihan</label>
+                          <select id="spp-bulan" class="form-select" required>
+                              <option value="">-- Pilih Bulan --</option>
+                              <option value="Januari 2026">Januari 2026</option>
+                              <option value="Februari 2026">Februari 2026</option>
+                              <option value="Maret 2026">Maret 2026</option>
+                              <option value="April 2026">April 2026</option>
+                              <option value="Mei 2026">Mei 2026</option>
+                              <option value="Juni 2026">Juni 2026</option>
+                              <option value="Juli 2026">Juli 2026</option>
+                              <option value="Agustus 2026">Agustus 2026</option>
+                              <option value="September 2026">September 2026</option>
+                              <option value="Oktober 2026">Oktober 2026</option>
+                              <option value="November 2026">November 2026</option>
+                              <option value="Desember 2026">Desember 2026</option>
+                          </select>
+                      </div>
+                      <div class="col-md-4">
+                          <label class="form-label fw-bold">Nominal (Rp)</label>
+                          <input type="number" id="spp-nominal" class="form-control" placeholder="Cth: 250000" required>
+                      </div>
+                      <div class="col-md-4">
+                          <label class="form-label fw-bold">Metode</label>
+                          <select id="spp-metode" class="form-select" required onchange="if(typeof toggleUploadBukti === 'function') toggleUploadBukti()">
+                              <option value="Cash / Tunai">Cash / Tunai</option>
+                              <option value="Transfer Bank Mandiri">Transfer Bank Mandiri</option>
+                              <option value="Transfer Bank BCA">Transfer Bank BCA</option>
+                              <option value="Transfer Bank BRI">Transfer Bank BRI</option>
+                          </select>
+                      </div>
+                      <div class="col-md-12 d-none" id="row-bukti-transfer">
+                          <label class="form-label">Upload Bukti Transfer</label>
+                          <input type="file" id="spp-file" class="form-control" accept="image/*">
+                      </div>
+                      <div class="col-md-12 text-end mt-4">
+                          <button type="submit" id="btn-simpan-spp" class="btn btn-success px-4 shadow-sm">
+                              <span id="spp-loading" class="spinner-border spinner-border-sm d-none me-2"></span>Simpan Pembayaran
+                          </button>
+                      </div>
+                  </div>
+              </form>
+          </div>
+      </div>
+
+      <!-- 2. PANEL TABEL RIWAYAT: Terbuka untuk Admin (Semua data) & Siswa (Data pribadi) -->
+      <div class="card shadow">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="fas fa-history me-2"></i>Riwayat Pembayaran SPP</h5>
+              <button class="btn btn-sm btn-outline-light" onclick="if(typeof muatUlangHistori === 'function') muatUlangHistori()"><i class="fas fa-sync-alt"></i> Segarkan</button>
+          </div>
+          <div class="card-body">
+              
+              <!-- Filter Pencarian Tambahan: Muncul hanya di layar Admin -->
+              <div id="filter-admin-spp" class="row mb-3 d-none">
+                  <div class="col-md-4">
+                      <div class="input-group">
+                          <input type="text" id="cari-spp-admin" class="form-control" placeholder="Cari NIS / Nama...">
+                          <button class="btn btn-primary" onclick="cariHistoriAdmin()"><i class="fas fa-search"></i></button>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="table-responsive">
+                  <table class="table table-bordered table-hover align-middle mb-0" id="tabel-spp">
+                      <thead class="table-light">
+                          <tr>
+                              <th>Tanggal</th>
+                              <th>NIS</th>
+                              <th>Nama Siswa</th>
+                              <th>Kelas</th>
+                              <th>Bulan</th>
+                              <th>Nominal</th>
+                              <th>Metode</th>
+                              <th>Bukti</th>
+                              <th>Status</th>
+                          </tr>
+                      </thead>
+                      <tbody id="data-histori-spp">
+                          <tr>
+                              <td colspan="9" class="text-center text-muted">Memuat data...</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+
   </div>
 </section>
       <section id="sc-master" class="d-none"><div class="glass-card"><div class="d-flex justify-content-between mb-3"><h5 id="master-title" class="fw-800">Master Data</h5><button class="btn btn-primary btn-sm rounded-pill px-3" onclick="openModal()"><i class="fa fa-plus me-1"></i>Tambah</button></div><div id="tbl-area" class="table-responsive"></div></div></section>
