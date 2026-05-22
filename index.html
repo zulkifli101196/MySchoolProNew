@@ -597,6 +597,168 @@ function updateUIBasedOnRole() {
     if (siswaSppNav) siswaSppNav.classList.add('d-none');
   }
 }
+
+async function loadHistoriSPP(filterNis = "") {
+  const tbody = document.getElementById("data-histori-spp");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="9" class="text-center"><span class="spinner-border spinner-border-sm me-2"></span>Memuat riwayat pembayaran...</td></tr>`;
+
+  try {
+    const res = await callGAS("getHistoriSPP", { nis: filterNis });
+
+    if (res && res.success && res.data && res.data.length > 0) {
+      let html = "";
+      res.data.forEach(item => {
+        let statusBadge = `<span class="badge bg-success">Berhasil</span>`;
+        if (item.status === "Pending") statusBadge = `<span class="badge bg-warning text-dark">Pending</span>`;
+        if (item.status === "Gagal") statusBadge = `<span class="badge bg-danger">Gagal</span>`;
+
+        let fileLink = "-";
+        if (item.buktiUrl && item.buktiUrl.startsWith("http")) {
+          fileLink = `<a href="${item.buktiUrl}" target="_blank" class="btn btn-xs btn-outline-primary py-0 px-1" style="font-size: 11px;"><i class="fas fa-image"></i> Lihat</a>`;
+        }
+
+        html += `
+          <tr>
+            <td>${item.tanggal || '-'}</td>
+            <td>${item.nis || '-'}</td>
+            <td>${item.nama || '-'}</td>
+            <td>${item.kelas || '-'}</td>
+            <td><strong class="text-primary">${item.bulan || '-'}</strong></td>
+            <td>Rp ${(Number(item.nominal) || 0).toLocaleString('id-ID')}</td>
+            <td><small class="text-muted">${item.metode || '-'}</small></td>
+            <td class="text-center">${fileLink}</td>
+            <td class="text-center">${statusBadge}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    } else {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Tidak ada riwayat pembayaran ditemukan.</td></tr>`;
+    }
+  } catch (error) {
+    console.error("Gagal memuat histori SPP:", error);
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Gagal memuat data dari server. Silakan coba lagi.</td></tr>`;
+  }
+}
+
+async function cariSiswaOtomatis() {
+  const nisInput = document.getElementById("spp-nis").value.trim();
+  if (!nisInput) return;
+
+  document.getElementById("spp-nama").value = "Mencari...";
+
+  try {
+    const res = await callGAS("getSiswaByNis", { nis: nisInput });
+
+    if (res && res.success && res.data) {
+      document.getElementById("spp-nama").value = res.data.nama || "-";
+      document.getElementById("spp-unit").value = res.data.unit || "-";
+      document.getElementById("spp-kelas").value = res.data.kelas || "-";
+    } else {
+      alert("Siswa dengan NIS tersebut tidak ditemukan!");
+      clearFormSiswa();
+    }
+  } catch (error) {
+    console.error("Gagal mencari data siswa:", error);
+    clearFormSiswa();
+  }
+}
+
+async function handleBayarSPP(event) {
+  event.preventDefault();
+
+  const loadingSpinner = document.getElementById("spp-loading");
+  const btnSimpan = document.getElementById("btn-simpan-spp");
+
+  if (loadingSpinner) loadingSpinner.classList.remove("d-none");
+  if (btnSimpan) btnSimpan.disabled = true;
+
+  const dataPayload = {
+    nis: document.getElementById("spp-nis").value,
+    nama: document.getElementById("spp-nama").value,
+    unit: document.getElementById("spp-unit").value,
+    kelas: document.getElementById("spp-kelas").value,
+    bulan: document.getElementById("spp-bulan").value,
+    nominal: document.getElementById("spp-nominal").value,
+    metode: document.getElementById("spp-metode").value,
+    buktiBase64: "", 
+    buktiNamaFile: ""
+  };
+
+  try {
+    const fileInput = document.getElementById("spp-file");
+    if (fileInput && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const base64String = await convertFileToBase64(file);
+      dataPayload.buktiBase64 = base64String;
+      dataPayload.buktiNamaFile = file.name;
+    }
+
+    const res = await callGAS("simpanBayarSPP", dataPayload);
+
+    if (res && res.success) {
+      alert("Pembayaran SPP berhasil disimpan!");
+      document.getElementById("form-bayar-spp").reset();
+      clearFormSiswa();
+      
+      inisialisasiMenuSPP();
+    } else {
+      alert("Gagal menyimpan data: " + (res.message || "Terjadi kesalahan server."));
+    }
+  } catch (error) {
+    console.error("Gagal memproses pembayaran:", error);
+    alert("Terjadi kesalahan sistem saat menyimpan pembayaran.");
+  } finally {
+    if (loadingSpinner) loadingSpinner.classList.add("d-none");
+    if (btnSimpan) btnSimpan.disabled = false;
+  }
+}
+
+function clearFormSiswa() {
+  if(document.getElementById("spp-nama")) document.getElementById("spp-nama").value = "";
+  if(document.getElementById("spp-unit")) document.getElementById("spp-unit").value = "";
+  if(document.getElementById("spp-kelas")) document.getElementById("spp-kelas").value = "";
+}
+
+function toggleUploadBukti() {
+  const metode = document.getElementById("spp-metode").value;
+  const rowBukti = document.getElementById("row-bukti-transfer");
+  if (!rowBukti) return;
+  
+  if (metode && metode.startsWith("Transfer")) {
+    rowBukti.classList.remove("d-none");
+  } else {
+    rowBukti.classList.add("d-none");
+    document.getElementById("spp-file").value = "";
+  }
+}
+
+function muatUlangHistori() {
+  if (userSession && userSession.role.toLowerCase() === "admin") {
+    loadHistoriSPP("");
+  } else if (userSession) {
+    loadHistoriSPP(userSession.u);
+  }
+}
+
+function cariHistoriAdmin() {
+  const keyword = document.getElementById("cari-spp-admin").value.trim();
+  loadHistoriSPP(keyword);
+}
+
+function convertFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64 = reader.result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = error => reject(error);
+  });
+}
 	
   function hitungDurasi() {
   const mulai = document.getElementById('cuti-mulai').value;
