@@ -446,13 +446,8 @@
     <span id="siswa-page-info" class="small text-muted fw-bold"></span>
   </div>
 </section>
-<!-- ======================================================== -->
-<!-- SECTION KONTEN SPP (Tempatkan di dalam main-content)    -->
-<!-- ======================================================== -->
 <section id="sc-spp" class="d-none">
   <div class="container-fluid p-0">
-      
-      <!-- 1. PANEL INPUT ADMIN: Otomatis muncul hanya jika login sebagai Admin -->
       <div id="panel-admin-spp" class="card shadow mb-4 d-none">
           <div class="card-header bg-primary text-white">
               <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Loket Pembayaran SPP (Admin)</h5>
@@ -521,16 +516,13 @@
               </form>
           </div>
       </div>
-
-      <!-- 2. PANEL TABEL RIWAYAT: Terbuka untuk Admin (Semua data) & Siswa (Data pribadi) -->
       <div class="card shadow">
           <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
               <h5 class="mb-0"><i class="fas fa-history me-2"></i>Riwayat Pembayaran SPP</h5>
               <button class="btn btn-sm btn-outline-light" onclick="if(typeof muatUlangHistori === 'function') muatUlangHistori()"><i class="fas fa-sync-alt"></i> Segarkan</button>
           </div>
           <div class="card-body">
-              
-              <!-- Filter Pencarian Tambahan: Muncul hanya di layar Admin -->
+        
               <div id="filter-admin-spp" class="row mb-3 d-none">
                   <div class="col-md-4">
                       <div class="input-group">
@@ -718,6 +710,46 @@ function updateUIBasedOnRole() {
   }
 }
 
+function inisialisasiMenuSPP() {
+  if (typeof userSession === "undefined" || !userSession || !userSession.role) {
+    console.error("Session pengguna tidak ditemukan atau belum login.");
+    return;
+  }
+
+  const panelAdmin = document.getElementById("panel-admin-spp");
+  const filterAdmin = document.getElementById("filter-admin-spp");
+  const inputNis = document.getElementById("spp-nis");
+  
+  if (document.getElementById("form-bayar-spp")) {
+    document.getElementById("form-bayar-spp").reset();
+  }
+  clearFormSiswa();
+
+  const role = userSession.role.toLowerCase();
+
+  if (role === 'admin') {
+    if (panelAdmin) panelAdmin.classList.remove("d-none");
+    if (filterAdmin) filterAdmin.classList.remove("d-none");
+    
+    if (inputNis) {
+      inputNis.readOnly = false;
+      inputNis.placeholder = "Ketik NIS & tekan Tab/Enter";
+    }
+    
+    loadHistoriSPP("");
+  } else {
+    if (panelAdmin) panelAdmin.classList.add("d-none");
+    if (filterAdmin) filterAdmin.classList.add("d-none");
+    
+    if (inputNis) {
+      inputNis.value = userSession.u || ""; 
+      inputNis.readOnly = true;
+    }
+    
+    loadHistoriSPP(userSession.u || "");
+  }
+}
+	
 async function loadHistoriSPP(filterNis = "") {
   const tbody = document.getElementById("data-histori-spp");
   if (!tbody) return;
