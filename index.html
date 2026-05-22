@@ -562,29 +562,42 @@
   if(sc === 'sc-presensi-siswa') {
     loadPresensiSiswaMenu();
   }
+  if(sc === 'sc-spp') {
+    inisialisasiMenuSPP();
+  }
   if (window.innerWidth < 992) toggleSidebar();
 }
 
-  function updateUIBasedOnRole() {
+function updateUIBasedOnRole() {
   const adminNav = document.getElementById('nav-admin');
   const userCutiNav = document.getElementById('menu-cuti-user');
   const siswaPresensiNav = document.getElementById('menu-presensi-siswa');
+  const siswaSppNav = document.getElementById('menu-spp-siswa'); 
   const role = userSession.role.toLowerCase();
 
   if (role === 'admin') {
     adminNav.classList.remove('d-none');
     userCutiNav.classList.add('d-none');
     siswaPresensiNav.classList.remove('d-none');
+    if (siswaSppNav) siswaSppNav.classList.add('d-none');
   } else if (role === 'guru' || role === 'karyawan') {
     adminNav.classList.add('d-none');
     userCutiNav.classList.remove('d-none');
     siswaPresensiNav.classList.remove('d-none');
+    if (siswaSppNav) siswaSppNav.classList.add('d-none');
+  } else if (role === 'siswa') {
+    adminNav.classList.add('d-none');
+    userCutiNav.classList.add('d-none');
+    siswaPresensiNav.classList.add('d-none');
+    if (siswaSppNav) siswaSppNav.classList.remove('d-none');
   } else {
     adminNav.classList.add('d-none');
     userCutiNav.classList.add('d-none');
     siswaPresensiNav.classList.add('d-none');
+    if (siswaSppNav) siswaSppNav.classList.add('d-none');
   }
 }
+	
   function hitungDurasi() {
   const mulai = document.getElementById('cuti-mulai').value;
   const selesai = document.getElementById('cuti-selesai').value;
