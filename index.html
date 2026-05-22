@@ -95,6 +95,7 @@
     <button id="menu-cuti-user" class="nav-item-custom d-none" onclick="nav('sc-cuti', this)"><i class="fa fa-calendar-plus me-2"></i> Ajukan Cuti</button>
     <button class="nav-item-custom" onclick="nav('sc-absen', this)"><i class="fa fa-fingerprint me-2"></i> Presensi</button>
 	<button id="menu-presensi-siswa" class="nav-item-custom d-none" onclick="nav('sc-presensi-siswa', this)"><i class="fa fa-user-check me-2"></i> Presensi Siswa</button>
+	<button id="menu-spp-siswa" class="nav-item-custom d-none" onclick="nav('sc-spp', this)"><i class="fa fa-wallet me-2"></i> Pembayaran SPP</button>  
     <button class="nav-item-custom" onclick="nav('sc-self', this)"><i class="fa fa-user-gear me-2"></i> Profile</button>
     <div id="nav-admin" class="d-none">
       <hr class="opacity-10 my-4">
@@ -109,6 +110,7 @@
         <button class="nav-item-custom small py-2" onclick="nav('sc-master', this); loadTable('Data_Siswa')"><i class="fa fa-user-graduate me-2"></i> Data Siswa</button>
       </div>
       <button class="nav-item-custom" onclick="nav('sc-approval-cuti', this); loadApprovalCuti()"><i class="fa fa-check-double me-2"></i> Approval Cuti</button>
+	  <button class="nav-item-custom" onclick="nav('sc-spp', this); inisialisasiMenuSPP()"><i class="fa fa-calculator me-2"></i> Keuangan SPP</button>
       <button class="nav-item-custom" onclick="nav('sc-users', this); loadTable('User_Admin')"><i class="fa fa-users-cog me-2"></i> Pengaturan Users</button>
       <button class="nav-item-custom" onclick="nav('sc-rekap', this); loadRekap()"><i class="fa fa-file-export me-2"></i> Rekap Absensi</button>
     </div>
@@ -457,7 +459,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbybXgicPATfZ8-VEZhqy1NNUpVq79nYd6WnfJLlBrosuDkdt3_p0r4PkEss0ObHAAz_/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzif_rMhNaP4xP96RBOtuGgDUe9uigDKdNfKhdRTNO-ij8_pq8eFrLamp8bw87cCTvdmg/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
