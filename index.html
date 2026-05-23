@@ -452,13 +452,7 @@
       <div id="panel-admin-spp" class="card shadow mb-4">
           <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
               <h5 class="mb-0" id="title-panel-spp"><i class="fas fa-calculator me-2"></i>Form Pembayaran SPP</h5>
-              <div id="wrapper-mode-input" class="d-none">
-                 <select id="spp-mode-input" class="form-select form-select-sm" onchange="toggleModeInputAdmin()">
-                     <option value="perorangan">Mode: Perorangan Siswa</option>
-                     <option value="massal">Mode: Input Massal per Kelas</option>
-                 </select>
               </div>
-          </div>
           <div class="card-body">
               <form id="form-bayar-spp" onsubmit="handleBayarSPP(event)">
                   <div class="row g-3">
@@ -488,18 +482,18 @@
                           <label class="form-label fw-bold">Bulan Tagihan</label>
                           <select id="spp-bulan" class="form-select" required>
                               <option value="">-- Pilih Bulan --</option>
-                              <option value="Januari 2026">Januari 2026</option>
-                              <option value="Februari 2026">Februari 2026</option>
-                              <option value="Maret 2026">Maret 2026</option>
-                              <option value="April 2026">April 2026</option>
-                              <option value="Mei 2026">Mei 2026</option>
-                              <option value="Juni 2026">Juni 2026</option>
-                              <option value="Juli 2026">Juli 2026</option>
-                              <option value="Agustus 2026">Agustus 2026</option>
-                              <option value="September 2026">September 2026</option>
-                              <option value="Oktober 2026">Oktober 2026</option>
-                              <option value="November 2026">November 2026</option>
-                              <option value="Desember 2026">Desember 2026</option>
+                              <option value="Januari">Januari</option>
+                              <option value="Februari">Februari</option>
+                              <option value="Maret">Maret</option>
+                              <option value="April">April</option>
+                              <option value="Mei">Mei</option>
+                              <option value="Juni">Juni</option>
+                              <option value="Juli">Juli</option>
+                              <option value="Agustus">Agustus</option>
+                              <option value="September">September</option>
+                              <option value="Oktober">Oktober</option>
+                              <option value="November">November</option>
+                              <option value="Desember">Desember</option>
                           </select>
                       </div>
                       <div class="col-md-4">
@@ -510,9 +504,8 @@
                           <label class="form-label fw-bold">Metode / Jenis Pembayaran</label>
                           <select id="spp-metode" class="form-select" required onchange="toggleUploadBukti()">
                               <option value="Cash / Tunai">Cash / Tunai</option>
-                              <option value="Transfer Bank Mandiri">Transfer Bank Mandiri</option>
-                              <option value="Transfer Bank BCA">Transfer Bank BCA</option>
-                              <option value="Transfer Bank BRI">Transfer Bank BRI</option>
+                              <option value="Transfer Bank">Transfer Bank</option>
+                              <option value="Qris">Qris</option>
                           </select>
                       </div>
                       
@@ -789,13 +782,14 @@ async function inisialisasiMenuSPP() {
   
   await muatDropdownReferensiDinamis();
 
-  document.getElementById("form-bayar-spp").reset();
+  if (document.getElementById("form-bayar-spp")) {
+    document.getElementById("form-bayar-spp").reset();
+  }
   clearFormSiswa();
 
   if (role === 'admin') {
     document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-calculator me-2"></i>Loket Pembayaran SPP (Admin)`;
     document.getElementById("text-btn-spp").innerText = "Simpan Transaksi (Lunas)";
-    document.getElementById("wrapper-mode-input").classList.remove("d-none");
     document.getElementById("filter-admin-spp").classList.remove("d-none");
     document.getElementById("th-aksi-admin").classList.remove("d-none");
     
@@ -803,19 +797,16 @@ async function inisialisasiMenuSPP() {
     document.getElementById("spp-nis").placeholder = "Ketik NIS lalu tekan Enter/Tab";
     document.getElementById("spp-unit").disabled = true;
     document.getElementById("spp-kelas").disabled = true;
+    document.getElementById("row-bukti-transfer").classList.add("d-none");
+    document.getElementById("spp-file").required = false;
 
-    toggleModeInputAdmin();
     loadHistoriSPP("");
   } 
   else if (role === 'siswa') {
     document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-wallet me-2"></i>Konfirmasi Pembayaran SPP Mandiri`;
     document.getElementById("text-btn-spp").innerText = "Kirim Bukti Pembayaran (Pending)";
-    document.getElementById("wrapper-mode-input").classList.add("d-none");
     document.getElementById("filter-admin-spp").classList.add("d-none");
     document.getElementById("th-aksi-admin").classList.add("d-none");
-    
-    document.getElementById("col-spp-nis").classList.remove("d-none");
-    document.getElementById("col-spp-nama").classList.remove("d-none");
     
     document.getElementById("spp-nis").value = userSession.u || "";
     document.getElementById("spp-nis").readOnly = true;
@@ -860,30 +851,6 @@ async function muatDropdownReferensiDinamis() {
   } catch (e) { console.error("Gagal menarik data_referensi:", e); }
 }
 
-function toggleModeInputAdmin() {
-  const mode = document.getElementById("spp-mode-input").value;
-  const colNis = document.getElementById("col-spp-nis");
-  const colNama = document.getElementById("col-spp-nama");
-  
-  if (mode === "massal") {
-    colNis.classList.add("d-none");
-    colNama.classList.add("d-none");
-    document.getElementById("spp-nis").required = false;
-    document.getElementById("spp-nama").required = false;
-    
-    document.getElementById("spp-unit").disabled = false;
-    document.getElementById("spp-kelas").disabled = false;
-  } else {
-    colNis.classList.remove("d-none");
-    colNama.classList.remove("d-none");
-    document.getElementById("spp-nis").required = true;
-    document.getElementById("spp-nama").required = true;
-    
-    document.getElementById("spp-unit").disabled = true;
-    document.getElementById("spp-kelas").disabled = true;
-  }
-}
-
 async function cariSiswaOtomatis() {
   const nisInput = document.getElementById("spp-nis").value.trim();
   if (!nisInput) return;
@@ -904,13 +871,22 @@ async function cariSiswaOtomatis() {
   }
 }
 
+function convertFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
 async function handleBayarSPP(event) {
   event.preventDefault();
   const role = userSession.role.toLowerCase();
-  const modeInput = document.getElementById("spp-mode-input") ? document.getElementById("spp-mode-input").value : "perorangan";
 
   const loadingSpinner = document.getElementById("spp-loading");
   const btnSimpan = document.getElementById("btn-simpan-spp");
+  
   if (loadingSpinner) loadingSpinner.classList.remove("d-none");
   if (btnSimpan) btnSimpan.disabled = true;
 
@@ -918,66 +894,19 @@ async function handleBayarSPP(event) {
   const fileInput = document.getElementById("spp-file");
   if (fileInput && fileInput.files.length > 0) {
     const file = fileInput.files[0];
-    const base64Str = await convertFileToBase64(file);
-    fileObj.base64 = base64Str;
-    fileObj.name = file.name;
-  }
-
-  // Set default status awal transaksi
-  let statusTransaksi = (role === "admin") ? "Berhasil" : "Pending";
-
-  if (role === "admin" && modeInput === "massal") {
     try {
-      const rawSiswa = await callGAS("getFullData", { sheetName: "Data_Siswa" });
-      if (!rawSiswa || !rawSiswa.values) throw new Error("Gagal memuat daftar siswa");
-
-      const h = rawSiswa.header;
-      const idxNis = h.indexOf("Username");
-      const idxNama = h.indexOf("Nama");
-      const idxUnit = h.indexOf("Unit");
-      const idxKelas = h.indexOf("Kelas");
-
-      const targetUnit = document.getElementById("spp-unit").value;
-      const targetKelas = document.getElementById("spp-kelas").value;
-
-      const muridSekelas = rawSiswa.values.filter(r => r[idxUnit] === targetUnit && r[idxKelas] === targetKelas);
-
-      if (muridSekelas.length === 0) {
-        alert(`Tidak ada siswa di Kelas ${targetKelas} (${targetUnit})!`);
-        if (loadingSpinner) loadingSpinner.classList.add("d-none");
-        if (btnSimpan) btnSimpan.disabled = false;
-        return;
-      }
-
-      if(!confirm(`Konfirmasi: Kirim input pembayaran SPP untuk ${muridSekelas.length} siswa di kelas ${targetKelas}?`)) {
-         throw new Error("Dibatalkan pengguna");
-      }
-
-      for (let murid of muridSekelas) {
-        let payloadMassal = {
-          nis: murid[idxNis],
-          nama: murid[idxNama],
-          unit: targetUnit,
-          kelas: targetKelas,
-          bulan: document.getElementById("spp-bulan").value,
-          nominal: document.getElementById("spp-nominal").value,
-          jenis_pembayaran: document.getElementById("spp-metode").value,
-          status: "Berhasil",
-          buktiBase64: fileObj.base64,
-          buktiNamaFile: fileObj.name
-        };
-        await callGAS("prosesBayarSPP", payloadMassal);
-      }
-      alert(`Sukses mendistribusikan pembayaran SPP untuk ${muridSekelas.length} siswa.`);
-    } catch(err) {
-      console.error(err);
-    } finally {
+      const base64Str = await convertFileToBase64(file);
+      fileObj.base64 = base64Str;
+      fileObj.name = file.name;
+    } catch (err) {
+      alert("Gagal membaca file bukti pembayaran.");
       if (loadingSpinner) loadingSpinner.classList.add("d-none");
       if (btnSimpan) btnSimpan.disabled = false;
-      inisialisasiMenuSPP();
+      return;
     }
-    return;
   }
+
+  let statusTransaksi = (role === "admin") ? "Berhasil" : "Pending";
 
   const dataPayload = {
     nis: document.getElementById("spp-nis").value,
@@ -992,21 +921,22 @@ async function handleBayarSPP(event) {
     buktiNamaFile: fileObj.name
   };
 
-  try {
-    if (role === "siswa") {
-       dataPayload.unit = userSession.unit;
-       dataPayload.kelas = userSession.kelas;
-    }
+  if (role === "siswa") {
+    dataPayload.unit = userSession.unit;
+    dataPayload.kelas = userSession.kelas;
+  }
 
+  try {
     const res = await callGAS("prosesBayarSPP", dataPayload);
     if (res && res.success) {
-      alert(role === "admin" ? "Pembayaran SPP individu sukses direkam!" : "Klaim pembayaran terkirim! Silakan tunggu verifikasi admin.");
+      alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "Bukti pembayaran berhasil terkirim! Silakan tunggu verifikasi admin.");
       inisialisasiMenuSPP();
     } else {
-      alert("Error: " + res.message);
+      alert("Gagal menyimpan: " + (res.message || "Terjadi kesalahan backend."));
     }
   } catch (error) {
-    alert("Sistem gagal memproses.");
+    console.error(error);
+    alert("Sistem gagal terhubung ke backend Google Sheets.");
   } finally {
     if (loadingSpinner) loadingSpinner.classList.add("d-none");
     if (btnSimpan) btnSimpan.disabled = false;
@@ -1024,7 +954,7 @@ async function loadHistoriSPP(filterNis = "") {
     const role = userSession.role.toLowerCase();
 
     if (res && res.success && res.data) {
-      cacheHistoriSpp = res.data; // Simpan ke memory lokal untuk filter instan
+      cacheHistoriSpp = res.data; // Simpan ke memory lokal untuk filter instan frontend
       renderTabelSpp(cacheHistoriSpp, role);
     } else {
       tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Belum ada riwayat transaksi.</td></tr>`;
@@ -1036,6 +966,8 @@ async function loadHistoriSPP(filterNis = "") {
 
 function renderTabelSpp(arrData, role) {
   const tbody = document.getElementById("data-histori-spp");
+  if(!tbody) return;
+  
   if(arrData.length === 0) {
     tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Data pencarian tidak ditemukan.</td></tr>`;
     return;
@@ -1121,7 +1053,7 @@ function clearFormSiswa() {
 
 function toggleUploadBukti() {
   const role = userSession.role.toLowerCase();
-  if (role === 'siswa') return;
+  if (role === 'siswa') return; // Jika siswa, elemen ini selalu terbuka secara default
 
   const metode = document.getElementById("spp-metode").value;
   const rowBukti = document.getElementById("row-bukti-transfer");
