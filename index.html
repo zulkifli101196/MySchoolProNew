@@ -594,7 +594,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbz-mF4nvFQvrpaQccnMLT6ZApQotFqSHyjXN89L6_qcGRCm4ybvv_Q2lFFmpfDwNDq1nQ/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbx-L0bD2Uws7k6ArhW0-u474SB9TqvYw3R4WcNgxEJTLo0AEwKCm7p26anz9MG0rJZZ/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -802,7 +802,7 @@ async function inisialisasiMenuSPP() {
       inputNis.readOnly = false;
       inputNis.disabled = false;
       inputNis.placeholder = "Ketik NIS lalu tekan Enter";
-      inputNis.removeAttribute("data-locked"); // Reset lock untuk admin
+      inputNis.removeAttribute("data-locked"); 
     }
     
     document.getElementById("spp-unit").disabled = true;
@@ -814,7 +814,7 @@ async function inisialisasiMenuSPP() {
   } 
   else if (role === 'siswa') {
     document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-wallet me-2"></i>Konfirmasi Pembayaran SPP Mandiri`;
-    document.getElementById("text-btn-spp").innerText = "Simpan Transaksi";
+    document.getElementById("text-btn-spp").innerText = "Kirim Bukti Pembayaran (Pending)";
     
     if (document.getElementById("filter-admin-spp")) document.getElementById("filter-admin-spp").classList.add("d-none");
     if (document.getElementById("th-aksi-admin")) document.getElementById("th-aksi-admin").classList.add("d-none");
@@ -832,25 +832,26 @@ async function inisialisasiMenuSPP() {
     if (inputNis) {
       inputNis.value = "Memuat NIS...";
       inputNis.readOnly = true;
-      inputNis.setAttribute("data-locked", "true"); // Kunci elemen agar tidak ditimpa fungsi lain
+      inputNis.setAttribute("data-locked", "true"); 
     }
 
     try {
+      // PERBAIKAN: Mengirim objek payload terstruktur agar dibaca sempurna oleh backend
       const res = await callGAS("getNisSiswaByUsername", { username: usernameSiswa });
       if (res && res.success && res.nis) {
         if (inputNis) {
-          inputNis.value = res.nis;
-          // Set ke atribut cadangan agar handleBayarSPP bisa membaca data valid jika ditimpa
-          inputNis.setAttribute("data-nis-asli", res.nis); 
+          inputNis.value = String(res.nis);
+          inputNis.setAttribute("data-nis-asli", String(res.nis)); 
         }
         loadHistoriSPP(res.nis);
       } else {
-        if (inputNis) inputNis.value = "[NIS Tidak Ditemukan]";
-        loadHistoriSPP(usernameSiswa);
+        // PERBAIKAN CADANGAN: Jika NIS gagal terurai, panggil histori via Nama agar visual tabel tidak kosong
+        if (inputNis) inputNis.value = "-";
+        loadHistoriSPP(userSession.nama || usernameSiswa);
       }
     } catch (err) {
-      if (inputNis) inputNis.value = "[Gagal Memuat NIS]";
-      loadHistoriSPP(usernameSiswa);
+      if (inputNis) inputNis.value = "-";
+      loadHistoriSPP(userSession.nama || usernameSiswa);
     }
   }
 }
