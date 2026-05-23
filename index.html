@@ -794,13 +794,14 @@ async function inisialisasiMenuSPP() {
     document.getElementById("th-aksi-admin").classList.remove("d-none");
     
     document.getElementById("spp-nis").readOnly = false;
+    document.getElementById("spp-nis").disabled = false;
     document.getElementById("spp-nis").placeholder = "Ketik NIS lalu tekan Enter/Tab";
     document.getElementById("spp-unit").disabled = true;
     document.getElementById("spp-kelas").disabled = true;
     document.getElementById("row-bukti-transfer").classList.add("d-none");
     document.getElementById("spp-file").required = false;
 
-    loadHistoriSPP("");
+    loadHistoriSPP(""); 
   } 
   else if (role === 'siswa') {
     document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-wallet me-2"></i>Konfirmasi Pembayaran SPP Mandiri`;
@@ -808,10 +809,13 @@ async function inisialisasiMenuSPP() {
     document.getElementById("filter-admin-spp").classList.add("d-none");
     document.getElementById("th-aksi-admin").classList.add("d-none");
     
-    document.getElementById("spp-nis").value = userSession.u || "";
-    document.getElementById("spp-nis").readOnly = true;
-    document.getElementById("spp-nama").value = userSession.nama || "";
+    const nisSiswa = userSession.u || userSession.username || "";
     
+    document.getElementById("spp-nis").value = nisSiswa;
+    document.getElementById("spp-nis").readOnly = true;
+    document.getElementById("spp-nis").disabled = false;
+    
+    document.getElementById("spp-nama").value = userSession.nama || "";
     document.getElementById("spp-unit").value = userSession.unit || "";
     document.getElementById("spp-kelas").value = userSession.kelas || "";
     document.getElementById("spp-unit").disabled = true;
@@ -820,7 +824,7 @@ async function inisialisasiMenuSPP() {
     document.getElementById("row-bukti-transfer").classList.remove("d-none");
     document.getElementById("spp-file").required = true;
 
-    loadHistoriSPP(userSession.u || "");
+    loadHistoriSPP(nisSiswa); 
   }
 }
 
@@ -907,9 +911,14 @@ async function handleBayarSPP(event) {
   }
 
   let statusTransaksi = (role === "admin") ? "Berhasil" : "Pending";
+  
+  let nisValue = document.getElementById("spp-nis").value.trim();
+  if (!nisValue && role === "siswa") {
+    nisValue = userSession.u || userSession.username || "";
+  }
 
   const dataPayload = {
-    nis: document.getElementById("spp-nis").value,
+    nis: nisValue,
     nama: document.getElementById("spp-nama").value,
     unit: document.getElementById("spp-unit").value,
     kelas: document.getElementById("spp-kelas").value,
@@ -930,7 +939,7 @@ async function handleBayarSPP(event) {
     const res = await callGAS("prosesBayarSPP", dataPayload);
     if (res && res.success) {
       alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "Bukti pembayaran berhasil terkirim! Silakan tunggu verifikasi admin.");
-      inisialisasiMenuSPP();
+      inisialisasiMenuSPP(); 
     } else {
       alert("Gagal menyimpan: " + (res.message || "Terjadi kesalahan backend."));
     }
