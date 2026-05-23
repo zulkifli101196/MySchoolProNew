@@ -594,7 +594,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwhZDcsP3HMFzcnSIZVg3hlTCd0KLzg4pbA86ThTyLDnO_HFTsC6UNp0uW5XY_Nj4uLdw/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyyDQP8FEanp1ZDShhaxa3IY5XUeaDe_dQa6Gz_B6xbQBV6n1pSFwS83b7MO-FnEDTkTA/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -789,6 +789,8 @@ async function inisialisasiMenuSPP() {
   }
   clearFormSiswa();
 
+  const inputNis = document.getElementById("spp-nis");
+
   if (role === 'admin') {
     document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-calculator me-2"></i>Loket Pembayaran SPP (Admin)`;
     document.getElementById("text-btn-spp").innerText = "Simpan Transaksi (Lunas)";
@@ -796,11 +798,11 @@ async function inisialisasiMenuSPP() {
     if (document.getElementById("filter-admin-spp")) document.getElementById("filter-admin-spp").classList.remove("d-none");
     if (document.getElementById("th-aksi-admin")) document.getElementById("th-aksi-admin").classList.remove("d-none");
     
-    const inputNis = document.getElementById("spp-nis");
     if (inputNis) {
       inputNis.readOnly = false;
       inputNis.disabled = false;
       inputNis.placeholder = "Ketik NIS lalu tekan Enter";
+      inputNis.removeAttribute("data-locked"); // Reset lock untuk admin
     }
     
     document.getElementById("spp-unit").disabled = true;
@@ -826,24 +828,28 @@ async function inisialisasiMenuSPP() {
     document.getElementById("spp-file").required = true;
 
     const usernameSiswa = userSession.u || userSession.username || "";
-    const inputNis = document.getElementById("spp-nis");
     
     if (inputNis) {
       inputNis.value = "Memuat NIS...";
       inputNis.readOnly = true;
+      inputNis.setAttribute("data-locked", "true"); // Kunci elemen agar tidak ditimpa fungsi lain
     }
 
     try {
       const res = await callGAS("getNisSiswaByUsername", { username: usernameSiswa });
       if (res && res.success && res.nis) {
-        if (inputNis) inputNis.value = res.nis;
+        if (inputNis) {
+          inputNis.value = res.nis;
+          // Set ke atribut cadangan agar handleBayarSPP bisa membaca data valid jika ditimpa
+          inputNis.setAttribute("data-nis-asli", res.nis); 
+        }
         loadHistoriSPP(res.nis);
       } else {
-        if (inputNis) inputNis.value = usernameSiswa;
+        if (inputNis) inputNis.value = "[NIS Tidak Ditemukan]";
         loadHistoriSPP(usernameSiswa);
       }
     } catch (err) {
-      if (inputNis) inputNis.value = usernameSiswa;
+      if (inputNis) inputNis.value = "[Gagal Memuat NIS]";
       loadHistoriSPP(usernameSiswa);
     }
   }
