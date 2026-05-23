@@ -834,7 +834,6 @@ async function inisialisasiMenuSPP() {
     }
 
     try {
-      // PERBAIKAN: Mengirim objek payload terstruktur agar dibaca sempurna oleh backend
       const res = await callGAS("getNisSiswaByUsername", { username: usernameSiswa });
       if (res && res.success && res.nis) {
         if (inputNis) {
@@ -843,7 +842,6 @@ async function inisialisasiMenuSPP() {
         }
         loadHistoriSPP(res.nis);
       } else {
-        // PERBAIKAN CADANGAN: Jika NIS gagal terurai, panggil histori via Nama agar visual tabel tidak kosong
         if (inputNis) inputNis.value = "-";
         loadHistoriSPP(userSession.nama || usernameSiswa);
       }
@@ -938,7 +936,6 @@ async function handleBayarSPP(event) {
 
   let statusTransaksi = (role === "admin") ? "Berhasil" : "Pending";
   
-  // Pastikan mengambil value asli saat ini dari form input DOM, bukan dari variabel statis
   let nisValue = document.getElementById("spp-nis").value.trim();
   if ((!nisValue || nisValue === "Memuat NIS...") && role === "siswa") {
     nisValue = userSession.u || userSession.username || "";
@@ -965,7 +962,7 @@ async function handleBayarSPP(event) {
   try {
     const res = await callGAS("prosesBayarSPP", dataPayload);
     if (res && res.success) {
-      alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "Bukti pembayaran berhasil terkirim! Silakan tunggu verifikasi admin.");
+      alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "pembayaran berhasil terkirim! Silakan tunggu verifikasi admin.");
       inisialisasiMenuSPP(); 
     } else {
       alert("Gagal menyimpan: " + (res.message || "Terjadi kesalahan backend."));
