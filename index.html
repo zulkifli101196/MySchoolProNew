@@ -447,8 +447,7 @@
   </div>
 </section>
 <section id="sc-spp" class="d-none p-3">
-  <div class="container-fluid p-0">
-      
+  <div class="container-fluid p-0"> 
       <div id="panel-admin-spp" class="card shadow mb-4">
           <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
               <h5 class="mb-0" id="title-panel-spp"><i class="fas fa-calculator me-2"></i>Form Pembayaran SPP</h5>
@@ -476,8 +475,7 @@
                           <select id="spp-kelas" class="form-select" required>
                               <option value="">-- Pilih Kelas --</option>
                           </select>
-                      </div>
-                      
+                      </div>  
                       <div class="col-md-4">
                           <label class="form-label fw-bold">Bulan Tagihan</label>
                           <select id="spp-bulan" class="form-select" required>
@@ -510,7 +508,7 @@
                       </div>
                       
                       <div class="col-md-12 d-none" id="row-bukti-transfer">
-                          <label class="form-label fw-bold text-danger">Upload File Bukti Transfer *</label>
+                          <label class="form-label fw-bold text-danger">Upload File Bukti Pembayaran *</label>
                           <input type="file" id="spp-file" class="form-control" accept="image/*">
                       </div>
                       
@@ -818,7 +816,8 @@ async function inisialisasiMenuSPP() {
     
     if (document.getElementById("filter-admin-spp")) document.getElementById("filter-admin-spp").classList.add("d-none");
     if (document.getElementById("th-aksi-admin")) document.getElementById("th-aksi-admin").classList.add("d-none");
-    
+
+	document.getElementById("spp-nis").value = userSession.nis || "";
     document.getElementById("spp-nama").value = userSession.nama || "";
     document.getElementById("spp-unit").value = userSession.unit || "";
     document.getElementById("spp-kelas").value = userSession.kelas || "";
