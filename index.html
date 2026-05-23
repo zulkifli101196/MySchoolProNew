@@ -594,7 +594,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzQgVYn8qHt4BNPoFdcuOiyYoSrFOgK85XzWxtSEKWzTjF7jfGprmD8WqxQzoI87OR62w/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwhZDcsP3HMFzcnSIZVg3hlTCd0KLzg4pbA86ThTyLDnO_HFTsC6UNp0uW5XY_Nj4uLdw/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -782,7 +782,6 @@ async function inisialisasiMenuSPP() {
   }
 
   const role = userSession.role.toLowerCase();
-  
   await muatDropdownReferensiDinamis();
 
   if (document.getElementById("form-bayar-spp")) {
@@ -806,7 +805,7 @@ async function inisialisasiMenuSPP() {
     
     document.getElementById("spp-unit").disabled = true;
     document.getElementById("spp-kelas").disabled = true;
-    document.getElementById("row-bukti-transfer").classList.add("d-none");
+    if (document.getElementById("row-bukti-transfer")) document.getElementById("row-bukti-transfer").classList.add("d-none");
     document.getElementById("spp-file").required = false;
 
     loadHistoriSPP(""); 
@@ -823,7 +822,7 @@ async function inisialisasiMenuSPP() {
     document.getElementById("spp-kelas").value = userSession.kelas || "";
     document.getElementById("spp-unit").disabled = true;
     document.getElementById("spp-kelas").disabled = true;
-    document.getElementById("row-bukti-transfer").classList.remove("d-none");
+    if (document.getElementById("row-bukti-transfer")) document.getElementById("row-bukti-transfer").classList.remove("d-none");
     document.getElementById("spp-file").required = true;
 
     const usernameSiswa = userSession.u || userSession.username || "";
@@ -832,7 +831,6 @@ async function inisialisasiMenuSPP() {
     if (inputNis) {
       inputNis.value = "Memuat NIS...";
       inputNis.readOnly = true;
-      inputNis.disabled = false;
     }
 
     try {
@@ -880,7 +878,7 @@ async function muatDropdownReferensiDinamis() {
 
 async function cariSiswaOtomatis() {
   const nisInput = document.getElementById("spp-nis").value.trim();
-  if (!nisInput) return;
+  if (!nisInput || nisInput === "Memuat NIS...") return;
 
   document.getElementById("spp-nama").value = "Mencari profil...";
   try {
@@ -935,8 +933,9 @@ async function handleBayarSPP(event) {
 
   let statusTransaksi = (role === "admin") ? "Berhasil" : "Pending";
   
+  // Pastikan mengambil value asli saat ini dari form input DOM, bukan dari variabel statis
   let nisValue = document.getElementById("spp-nis").value.trim();
-  if (!nisValue && role === "siswa") {
+  if ((!nisValue || nisValue === "Memuat NIS...") && role === "siswa") {
     nisValue = userSession.u || userSession.username || "";
   }
 
@@ -986,7 +985,7 @@ async function loadHistoriSPP(filterNis = "") {
     const role = userSession.role.toLowerCase();
 
     if (res && res.success && res.data) {
-      cacheHistoriSpp = res.data; // Simpan ke memory lokal untuk filter instan frontend
+      cacheHistoriSpp = res.data;
       renderTabelSpp(cacheHistoriSpp, role);
     } else {
       tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Belum ada riwayat transaksi.</td></tr>`;
@@ -1085,7 +1084,7 @@ function clearFormSiswa() {
 
 function toggleUploadBukti() {
   const role = userSession.role.toLowerCase();
-  if (role === 'siswa') return; // Jika siswa, elemen ini selalu terbuka secara default
+  if (role === 'siswa') return;
 
   const metode = document.getElementById("spp-metode").value;
   const rowBukti = document.getElementById("row-bukti-transfer");
@@ -1104,7 +1103,8 @@ function muatUlangHistori() {
   if (role === "admin") {
     loadHistoriSPP("");
   } else {
-    loadHistoriSPP(userSession.u);
+    const inputNis = document.getElementById("spp-nis").value;
+    loadHistoriSPP(inputNis && inputNis !== "Memuat NIS..." ? inputNis : userSession.u);
   }
 }
 
