@@ -92,10 +92,10 @@
     <i class="fa fa-times btn-close-sidebar" onclick="toggleSidebar()"></i>
     <div class="mb-5 px-2"><h4 class="fw-800 text-white mb-0">MySchool PRO</h4><span class="badge bg-primary" style="font-size: 10px;">Edition 2026</span></div>
     <button class="nav-item-custom active" onclick="nav('sc-home', this)"><i class="fa fa-chart-line me-2"></i> Dashboard</button>
-    <button id="menu-cuti-user" class="nav-item-custom d-none" onclick="nav('sc-cuti', this)"><i class="fa fa-calendar-plus me-2"></i> Ajukan Cuti</button>
+    <button id="menu-cuti-user" class="nav-item-custom d-none" onclick="nav('sc-cuti', this)"><i class="fa fa-calendar-plus me-2"></i> Cuti</button>
     <button class="nav-item-custom" onclick="nav('sc-absen', this)"><i class="fa fa-fingerprint me-2"></i> Presensi</button>
 	<button id="menu-presensi-siswa" class="nav-item-custom d-none" onclick="nav('sc-presensi-siswa', this)"><i class="fa fa-user-check me-2"></i> Presensi Siswa</button>
-	<button id="menu-spp-siswa" class="nav-item-custom d-none" onclick="nav('sc-spp', this)"><i class="fa fa-wallet me-2"></i> Pembayaran SPP</button>  
+	<button id="menu-spp-siswa" class="nav-item-custom d-none" onclick="nav('sc-spp', this)"><i class="fa fa-wallet me-2"></i> SPP</button>  
     <button class="nav-item-custom" onclick="nav('sc-self', this)"><i class="fa fa-user-gear me-2"></i> Profile</button>
     <div id="nav-admin" class="d-none">
       <hr class="opacity-10 my-4">
@@ -109,9 +109,9 @@
         <button class="nav-item-custom small py-2" onclick="nav('sc-master', this); loadTable('Data_Karyawan')"><i class="fa fa-user-tie me-2"></i> Data Karyawan</button>
         <button class="nav-item-custom small py-2" onclick="nav('sc-master', this); loadTable('Data_Siswa')"><i class="fa fa-user-graduate me-2"></i> Data Siswa</button>
       </div>
-      <button class="nav-item-custom" onclick="nav('sc-approval-cuti', this); loadApprovalCuti()"><i class="fa fa-check-double me-2"></i> Approval Cuti</button>
-	  <button class="nav-item-custom" onclick="nav('sc-spp', this); inisialisasiMenuSPP()"><i class="fa fa-calculator me-2"></i> Keuangan SPP</button>
-      <button class="nav-item-custom" onclick="nav('sc-users', this); loadTable('User_Admin')"><i class="fa fa-users-cog me-2"></i> Pengaturan Users</button>
+      <button class="nav-item-custom" onclick="nav('sc-approval-cuti', this); loadApprovalCuti()"><i class="fa fa-check-double me-2"></i> Cuti</button>
+	  <button class="nav-item-custom" onclick="nav('sc-spp', this); inisialisasiMenuSPP()"><i class="fa fa-calculator me-2"></i> SPP</button>
+      <button class="nav-item-custom" onclick="nav('sc-users', this); loadTable('User_Admin')"><i class="fa fa-users-cog me-2"></i> Manage Admin</button>
       <button class="nav-item-custom" onclick="nav('sc-rekap', this); loadRekap()"><i class="fa fa-file-export me-2"></i> Rekap Absensi</button>
     </div>
     <div class="mt-auto p-3"> 
