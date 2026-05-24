@@ -447,245 +447,136 @@
   </div>
 </section>
 <section id="sc-spp" class="d-none p-3">
-  <div class="container-fluid p-0">
-      <ul class="nav nav-pills mb-3 bg-white p-2 rounded-4 shadow-sm" id="tab-menu-spp" role="tablist">
-          <li class="nav-item" role="presentation">
-              <button class="nav-link active rounded-3" id="spp-transaksi-tab" data-bs-toggle="tab" data-bs-target="#spp-transaksi" type="button" role="tab"><i class="fas fa-calculator me-2"></i>Transaksi Pembayaran</button>
-          </li>
-          <li class="nav-item id-admin-only d-none" id="li-rekap-spp" role="presentation">
-              <button class="nav-link rounded-3" id="spp-rekap-tab" data-bs-toggle="tab" data-bs-target="#spp-rekap" type="button" role="tab" onclick="muatAwalLaporanSPP()"><i class="fas fa-file-invoice-dollar me-2"></i>Laporan & Rekapitulasi</button>
-          </li>
-      </ul>
-
-      <div class="tab-content" id="tab-content-spp">
-          <div class="tab-pane fade show active" id="spp-transaksi" role="tabpanel">
-              <div id="panel-admin-spp" class="card shadow border-0 rounded-4 mb-4">
-                  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top-4">
-                      <h5 class="mb-0" id="title-panel-spp"><i class="fas fa-calculator me-2"></i>Form Pembayaran SPP</h5>
-                  </div>
-                  <div class="card-body">
-                      <form id="form-bayar-spp" onsubmit="handleBayarSPP(event)">
-                          <div class="row g-3">
-                              <div class="col-md-3" id="col-spp-nis">
-                                  <label class="form-label fw-bold">NIS</label>
-                                  <input type="text" id="spp-nis" class="form-control" placeholder="Ketik NIS..." required onchange="cariSiswaOtomatis()">
-                              </div>
-                              <div class="col-md-3" id="col-spp-nama">
-                                  <label class="form-label">Nama</label>
-                                  <input type="text" id="spp-nama" class="form-control" placeholder="..." required readonly>
-                              </div>
-                              <div class="col-md-3">
-                                  <label class="form-label fw-bold">Unit</label>
-                                  <select id="spp-unit" class="form-select" required>
-                                      <option value="">-- Pilih Unit --</option>
-                                  </select>
-                              </div>
-                              <div class="col-md-3">
-                                  <label class="form-label fw-bold">Kelas</label>
-                                  <select id="spp-kelas" class="form-select" required>
-                                      <option value="">-- Pilih Kelas --</option>
-                                  </select>
-                              </div>  
-                              <div class="col-md-4">
-                                  <label class="form-label fw-bold">Bulan Tagihan</label>
-                                  <select id="spp-bulan" class="form-select" required>
-                                      <option value="">-- Pilih Bulan --</option>
-                                      <option value="Januari">Januari</option>
-                                      <option value="Februari">Februari</option>
-                                      <option value="Maret">Maret</option>
-                                      <option value="April">April</option>
-                                      <option value="Mei">Mei</option>
-                                      <option value="Juni">Juni</option>
-                                      <option value="Juli">Juli</option>
-                                      <option value="Agustus">Agustus</option>
-                                      <option value="September">September</option>
-                                      <option value="Oktober">Oktober</option>
-                                      <option value="November">November</option>
-                                      <option value="Desember">Desember</option>
-                                  </select>
-                              </div>
-                              <div class="col-md-4">
-                                  <label class="form-label fw-bold">Nominal Pembayaran (Rp)</label>
-                                  <input type="number" id="spp-nominal" class="form-control" placeholder="Cth: 250000" required>
-                              </div>
-                              <div class="col-md-4">
-                                  <label class="form-label fw-bold">Metode / Jenis Pembayaran</label>
-                                  <select id="spp-metode" class="form-select" required onchange="toggleUploadBukti()">
-                                      <option value="Cash / Tunai">Cash / Tunai</option>
-                                      <option value="Transfer Bank">Transfer Bank</option>
-                                      <option value="Qris">Qris</option>
-                                  </select>
-                              </div>
-                              <div class="col-md-12 d-none" id="row-bukti-transfer">
-                                  <label class="form-label fw-bold text-danger">Upload File Bukti Pembayaran *</label>
-                                  <input type="file" id="spp-file" class="form-control" accept="image/*">
-                              </div>
-                              <div class="col-md-12 text-end mt-3">
-                                  <button type="submit" id="btn-simpan-spp" class="btn btn-success px-4 rounded-3">
-                                      <span id="spp-loading" class="spinner-border spinner-border-sm d-none me-2"></span>
-                                      <span id="text-btn-spp">Simpan Pembayaran</span>
-                                  </button>
-                              </div>
-                          </div>
-                      </form>
-                  </div>
+  <div class="container-fluid p-0"> 
+      <div id="panel-admin-spp" class="card shadow mb-4">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+              <h5 class="mb-0" id="title-panel-spp"><i class="fas fa-calculator me-2"></i>Form Pembayaran SPP</h5>
               </div>
-
-              <div class="card shadow border-0 rounded-4">
-                  <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center rounded-top-4">
-                      <h5 class="mb-0"><i class="fas fa-history me-2"></i>Riwayat Transaksi Masuk</h5>
-                      <button class="btn btn-sm btn-outline-light rounded-3" onclick="muatUlangHistori()"><i class="fas fa-sync-alt"></i> Refresh Data</button>
-                  </div>
-                  <div class="card-body">
-                      <div id="filter-admin-spp" class="row g-2 mb-3 d-none">
-                          <div class="col-md-4">
-                              <label class="small fw-bold">Pencarian Nama/NIS</label>
-                              <div class="input-group input-group-sm">
-                                  <input type="text" id="cari-spp-admin" class="form-control" placeholder="Ketik keyword...">
-                                  <button class="btn btn-primary" onclick="cariHistoriAdmin()"><i class="fas fa-search"></i></button>
-                              </div>
-                          </div>
-                          <div class="col-md-4">
-                              <label class="small fw-bold">Filter Unit</label>
-                              <select id="filter-spp-unit" class="form-select form-select-sm" onchange="saringTabelLokal()">
-                                  <option value="">-- Semua Unit --</option>
-                              </select>
-                          </div>
-                          <div class="col-md-4">
-                              <label class="small fw-bold">Filter Kelas</label>
-                              <select id="filter-spp-kelas" class="form-select form-select-sm" onchange="saringTabelLokal()">
-                                  <option value="">-- Semua Kelas --</option>
-                              </select>
-                          </div>
+          <div class="card-body">
+              <form id="form-bayar-spp" onsubmit="handleBayarSPP(event)">
+                  <div class="row g-3">
+                      <div class="col-md-3" id="col-spp-nis">
+                          <label class="form-label fw-bold">NIS</label>
+                          <input type="text" id="spp-nis" class="form-control" placeholder="Ketik NIS..." required onchange="cariSiswaOtomatis()">
                       </div>
-
-                      <div class="table-responsive">
-                          <table class="table table-bordered table-hover align-middle mb-0" id="tabel-spp">
-                              <thead class="table-light">
-                                  <tr>
-                                      <th>Tanggal</th>
-                                      <th>NIS</th>
-                                      <th>Nama Siswa</th>
-                                      <th>Unit / Kelas</th>
-                                      <th>Bulan</th>
-                                      <th>Nominal</th>
-                                      <th>Metode</th>
-                                      <th>Bukti</th>
-                                      <th>Status</th>
-                                      <th class="text-center">Kuitansi</th>
-                                      <th id="th-aksi-admin" class="d-none">Aksi Verifikasi</th>
-                                  </tr>
-                              </thead>
-                              <tbody id="data-histori-spp">
-                                  <tr>
-                                      <td colspan="11" class="text-center text-muted">Memuat data histori...</td>
-                                  </tr>
-                              </tbody>
-                          </table>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-          <div class="tab-pane fade" id="spp-rekap" role="tabpanel">
-              <div class="card shadow border-0 rounded-4">
-                  <div class="card-header bg-secondary text-white rounded-top-4">
-                      <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Rekapitulasi Global Pembayaran SPP</h5>
-                  </div>
-                  <div class="card-body">
-                      <div class="bg-light p-3 rounded-4 mb-3">
-                          <div class="row g-2">
-                              <div class="col-md-3"><label class="small fw-bold">Mulai Tanggal</label><input type="date" id="spp-f-start" class="form-control form-control-sm"></div>
-                              <div class="col-md-3"><label class="small fw-bold">Sampai Tanggal</label><input type="date" id="spp-f-end" class="form-control form-control-sm"></div>
-                              <div class="col-md-6 d-flex gap-1 align-items-end">
-                                  <button class="btn btn-sm btn-primary w-100 rounded-3" onclick="prosesTarikRekapSPP()"><i class="fa fa-search"></i> Cari</button>
-                                  <button class="btn btn-sm btn-success w-100 rounded-3" onclick="exportDataSPP('xlsx')"><i class="fa fa-file-excel"></i> Excel</button>
-                                  <button class="btn btn-sm btn-danger w-100 rounded-3" onclick="exportDataSPP('pdf')"><i class="fa fa-file-pdf"></i> PDF</button>
-                                  <button class="btn btn-sm btn-dark w-100 rounded-3" onclick="exportDataSPP('print')"><i class="fa fa-print"></i> Cetak</button>
-                              </div>
-                          </div>
+                      <div class="col-md-3" id="col-spp-nama">
+                          <label class="form-label">Nama</label>
+                          <input type="text" id="spp-nama" class="form-control" placeholder="..." required readonly>
                       </div>
                       
-                      <div class="row g-3 mb-3 text-center">
-                          <div class="col-md-6"><div class="p-2 border rounded-3 bg-success-subtle text-success fw-bold">Total Lunas/Valid: <span id="txt-total-lunas-spp">Rp 0</span></div></div>
-                          <div class="col-md-6"><div class="p-2 border rounded-3 bg-warning-subtle text-warning-emphasis fw-bold">Total Pending: <span id="txt-total-pending-spp">Rp 0</span></div></div>
+                      <div class="col-md-3">
+                          <label class="form-label fw-bold">Unit</label>
+                          <select id="spp-unit" class="form-select" required>
+                              <option value="">-- Pilih Unit --</option>
+                          </select>
                       </div>
-
-                      <div class="table-responsive">
-                          <table class="table table-sm table-bordered text-center align-middle small" id="tabel-rekap-spp-export">
-                              <thead class="table-dark">
-                                  <tr>
-                                      <th>No</th>
-                                      <th>ID Transaksi</th>
-                                      <th>Waktu Input</th>
-                                      <th>NIS</th>
-                                      <th>Nama Siswa</th>
-                                      <th>Unit / Kelas</th>
-                                      <th>Bulan Tagihan</th>
-                                      <th>Nominal</th>
-                                      <th>Metode</th>
-                                      <th>Status</th>
-                                  </tr>
-                              </thead>
-                              <tbody id="area-rekap-spp-rows">
-                                  <tr><td colspan="10" class="text-muted text-center py-3">Tentukan filter tanggal lalu klik Cari.</td></tr>
-                              </tbody>
-                          </table>
+                      <div class="col-md-3">
+                          <label class="form-label fw-bold">Kelas</label>
+                          <select id="spp-kelas" class="form-select" required>
+                              <option value="">-- Pilih Kelas --</option>
+                          </select>
+                      </div>  
+                      <div class="col-md-4">
+                          <label class="form-label fw-bold">Bulan Tagihan</label>
+                          <select id="spp-bulan" class="form-select" required>
+                              <option value="">-- Pilih Bulan --</option>
+                              <option value="Januari">Januari</option>
+                              <option value="Februari">Februari</option>
+                              <option value="Maret">Maret</option>
+                              <option value="April">April</option>
+                              <option value="Mei">Mei</option>
+                              <option value="Juni">Juni</option>
+                              <option value="Juli">Juli</option>
+                              <option value="Agustus">Agustus</option>
+                              <option value="September">September</option>
+                              <option value="Oktober">Oktober</option>
+                              <option value="November">November</option>
+                              <option value="Desember">Desember</option>
+                          </select>
+                      </div>
+                      <div class="col-md-4">
+                          <label class="form-label fw-bold">Nominal Pembayaran (Rp)</label>
+                          <input type="number" id="spp-nominal" class="form-control" placeholder="Cth: 250000" required>
+                      </div>
+                      <div class="col-md-4">
+                          <label class="form-label fw-bold">Metode / Jenis Pembayaran</label>
+                          <select id="spp-metode" class="form-select" required onchange="toggleUploadBukti()">
+                              <option value="Cash / Tunai">Cash / Tunai</option>
+                              <option value="Transfer Bank">Transfer Bank</option>
+                              <option value="Qris">Qris</option>
+                          </select>
+                      </div>
+                      
+                      <div class="col-md-12 d-none" id="row-bukti-transfer">
+                          <label class="form-label fw-bold text-danger">Upload File Bukti Pembayaran *</label>
+                          <input type="file" id="spp-file" class="form-control" accept="image/*">
+                      </div>
+                      
+                      <div class="col-md-12 text-end mt-3">
+                          <button type="submit" id="btn-simpan-spp" class="btn btn-success px-4">
+                              <span id="spp-loading" class="spinner-border spinner-border-sm d-none me-2"></span>
+                              <span id="text-btn-spp">Simpan Pembayaran</span>
+                          </button>
                       </div>
                   </div>
+              </form>
+          </div>
+      </div>
+
+      <div class="card shadow">
+          <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="fas fa-history me-2"></i>Riwayat Pembayaran SPP</h5>
+              <button class="btn btn-sm btn-outline-light" onclick="muatUlangHistori()"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+          </div>
+          <div class="card-body">
+              
+              <div id="filter-admin-spp" class="row g-2 mb-3 d-none">
+                  <div class="col-md-4">
+                      <label class="small fw-bold">Pencarian Nama/NIS</label>
+                      <div class="input-group">
+                          <input type="text" id="cari-spp-admin" class="form-control" placeholder="Ketik keyword...">
+                          <button class="btn btn-primary" onclick="cariHistoriAdmin()"><i class="fas fa-search"></i></button>
+                      </div>
+                  </div>
+                  <div class="col-md-3">
+                      <label class="small fw-bold">Filter Unit</label>
+                      <select id="filter-spp-unit" class="form-select" onchange="saringTabelLokal()">
+                          <option value="">-- Semua Unit --</option>
+                      </select>
+                  </div>
+                  <div class="col-md-3">
+                      <label class="small fw-bold">Filter Kelas</label>
+                      <select id="filter-spp-kelas" class="form-select" onchange="saringTabelLokal()">
+                          <option value="">-- Semua Kelas --</option>
+                      </select>
+                  </div>
+              </div>
+
+              <div class="table-responsive">
+                  <table class="table table-bordered table-hover align-middle mb-0" id="tabel-spp">
+                      <thead class="table-light">
+                          <tr>
+                              <th>Tanggal</th>
+                              <th>NIS</th>
+                              <th>Nama Siswa</th>
+                              <th>Unit / Kelas</th>
+                              <th>Bulan</th>
+                              <th>Nominal</th>
+                              <th>Metode</th>
+                              <th>Bukti</th>
+                              <th>Status</th>
+                              <th id="th-aksi-admin" class="d-none">Aksi Verifikasi</th>
+                          </tr>
+                      </thead>
+                      <tbody id="data-histori-spp">
+                          <tr>
+                              <td colspan="10" class="text-center text-muted">Memuat data histori...</td>
+                          </tr>
+                      </tbody>
+                  </table>
               </div>
           </div>
       </div>
-  </div>
-</section>
-
-<div class="modal fade" id="md-kuitansi-spp" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4">
-            <div class="modal-body p-4">
-                <div id="print-kuitansi-area" class="p-3 border rounded-3 bg-white text-dark" style="font-family: Arial, sans-serif; font-size: 12px;">
-                    <div class="text-center mb-2 pb-2 border-bottom" style="border-bottom: 2px solid #000 !important;">
-                        <h6 class="fw-bold mb-0" style="font-size: 14px;">YAYASAN PENDIDIKAN AL-ISHLAH</h6>
-                        <small style="font-size: 9px; display:block;">Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo</small>
-                        <small style="font-size: 9px;">Telp: (0435) 830969</small>
-                    </div>
-                    <h5 class="text-center fw-bold text-decoration-underline mb-3" style="font-size: 13px; letter-spacing: 1px;">KUITANSI PEMBAYARAN SPP</h5>
-                    
-                    <table class="w-100 table-sm table-borderless align-middle mb-3">
-                        <tr><td style="width: 30%;">ID Transaksi</td><td>: <span id="kui-id" class="fw-bold"></span></td></tr>
-                        <tr><td>Tanggal</td><td>: <span id="kui-tgl"></span></td></tr>
-                        <tr><td>NIS</td><td>: <span id="kui-nis"></span></td></tr>
-                        <tr><td>Nama Siswa</td><td>: <strong id="kui-nama"></strong></td></tr>
-                        <tr><td>Unit / Kelas</td><td>: <span id="kui-kelas"></span></td></tr>
-                        <tr><td>Bulan Tagihan</td><td>: <span id="kui-bulan" class="text-primary fw-bold"></span></td></tr>
-                        <tr><td>Metode Bayar</td><td>: <span id="kui-metode"></span></td></tr>
-                    </table>
-                    
-                    <div class="p-3 border rounded-3 bg-light text-center mb-3">
-                        <span class="d-block small text-muted">NOMINAL JUMLAH</span>
-                        <h4 class="fw-bold text-success my-1" id="kui-nominal" style="font-size: 20px;">Rp 0</h4>
-                        <em class="small text-muted d-block" id="kui-terbilang"></em>
-                    </div>
-                    
-                    <div class="row m-0 mt-4 align-items-end">
-                        <div class="col-7 p-0 small">
-                            <span class="d-block">Status Keabsahan:</span>
-                            <span class="badge bg-success py-1 px-2 mt-1 rounded-pill fw-bold" id="kui-status-badge">VALID / LUNAS</span>
-                        </div>
-                        <div class="col-5 p-0 text-center small">
-                            <span>Gorontalo, <span id="kui-tgl-ttd"></span></span>
-                            <div style="height: 55px;"></div>
-                            <strong class="text-decoration-underline d-block" id="kui-admin-ttd">Bendahara Sekolah</strong>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex gap-2 mt-4">
-                    <button class="btn btn-secondary w-100 rounded-3 btn-sm" data-bs-dismiss="modal">Tutup</button>
-                    <button class="btn btn-primary w-100 rounded-3 btn-sm" onclick="eksekusiCetakKuitansiLokal()"><i class="fa fa-print me-1"></i>Cetak Sekarang</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
   </div>
 </section>
@@ -701,7 +592,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxf23gyKEmbItSRToKg9WSN3OeI4JgZOSDwE8WwFy-ZltLjGAUTReWnkpxgnVgAw5Py/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwnKdWI_aKzuZFfqbXd_5O2XI_oKxA3990mAF0mR_tD3nNL8_wbn8cdUTjDuNQK6zeZqA/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -817,15 +708,11 @@ function updateUIBasedOnRole() {
   const siswaSppNav = document.getElementById('menu-spp-siswa'); 
   const role = userSession.role.toLowerCase();
 
-  document.querySelectorAll('.id-admin-only').forEach(el => el.classList.add('d-none'));
-
   if (role === 'admin') {
     adminNav.classList.remove('d-none');
     userCutiNav.classList.add('d-none');
     siswaPresensiNav.classList.remove('d-none');
     if (siswaSppNav) siswaSppNav.classList.add('d-none');
-	const tabRekap = document.getElementById('li-rekap-spp');
-	if(tabRekap) tabRekap.classList.remove('d-none');
   } else if (role === 'guru' || role === 'karyawan') {
     adminNav.classList.add('d-none');
     userCutiNav.classList.remove('d-none');
@@ -1217,241 +1104,6 @@ function muatUlangHistori() {
 function cariHistoriAdmin() {
   const keyword = document.getElementById("cari-spp-admin").value.trim();
   loadHistoriSPP(keyword);
-}
-
-  let objekKuitansiAktif = null;
-
-function bukaModalPreviewKuitansi(itemObj) {
-    objekKuitansiAktif = itemObj;
-    
-    document.getElementById('kui-id').innerText = itemObj.id;
-    document.getElementById('kui-tgl').innerText = itemObj.tanggal || '-';
-    document.getElementById('kui-nis').innerText = itemObj.nis || '-';
-    document.getElementById('kui-nama').innerText = itemObj.nama || '-';
-    document.getElementById('kui-kelas').innerText = `${itemObj.unit || '-'} / ${itemObj.kelas || '-'}`;
-    document.getElementById('kui-bulan').innerText = itemObj.bulan || '-';
-    document.getElementById('kui-metode').innerText = itemObj.metode || 'Transfer';
-    
-    const nominalNum = Number(itemObj.nominal) || 0;
-    document.getElementById('kui-nominal').innerText = "Rp " + nominalNum.toLocaleString('id-ID');
-    document.getElementById('kui-terbilang').innerText = `# ${angkaMenjadiTerbilang(nominalNum)} Rupiah #`;
-    
-    const badgeStatus = document.getElementById('kui-status-badge');
-    badgeStatus.innerText = itemObj.status.toUpperCase();
-    if(itemObj.status === "Berhasil" || itemObj.status === "Lunas") {
-        badgeStatus.className = "badge bg-success py-1 px-2 mt-1 rounded-pill fw-bold text-white";
-    } else if(itemObj.status === "Pending") {
-        badgeStatus.className = "badge bg-warning py-1 px-2 mt-1 rounded-pill fw-bold text-dark";
-    } else {
-        badgeStatus.className = "badge bg-danger py-1 px-2 mt-1 rounded-pill fw-bold text-white";
-    }
-    
-    const tglHariIni = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    document.getElementById('kui-tgl-ttd').innerText = tglHariIni;
-    document.getElementById('kui-admin-ttd').innerText = userSession.role === 'admin' ? userSession.nama : "Bendahara Sekolah";
-
-    new bootstrap.Modal(document.getElementById('md-kuitansi-spp')).show();
-}
-
-function eksekusiCetakKuitansiLokal() {
-    const isiKuitansi = document.getElementById('print-kuitansi-area').innerHTML;
-    const jendelaCetak = window.open('', '_blank');
-    jendelaCetak.document.write(`
-        <html>
-        <head>
-            <title>Cetak Kuitansi SPP - MySchool PRO</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-            <style>
-                body { padding: 20px; font-family: Arial, sans-serif; color: #000; }
-                .border-bottom { border-bottom: 2px solid #000 !important; }
-                @media print { body { padding: 0; } }
-            </style>
-        </head>
-        <body>
-            <div style="max-width: 450px; margin: 0 auto;">
-                ${isiKuitansi}
-            </div>
-            <script>
-                window.onload = function() { window.print(); setTimeout(function(){ window.close(); }, 500); };
-            <\/script>
-        </body>
-        </html>
-    `);
-    jendelaCetak.document.close();
-}
-
-function angkaMenjadiTerbilang(nilai) {
-    const bilangan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
-    let temp = "";
-    if (nilai < 12) { temp = " " + bilangan[nilai]; }
-    else if (nilai < 20) { temp = angkaMenjadiTerbilang(nilai - 10) + " Belas"; }
-    else if (nilai < 100) { temp = angkaMenjadiTerbilang(Math.floor(nilai / 10)) + " Puluh" + angkaMenjadiTerbilang(nilai % 10); }
-    else if (nilai < 200) { temp = " Seratus" + angkaMenjadiTerbilang(nilai - 100); }
-    else if (nilai < 1000) { temp = angkaMenjadiTerbilang(Math.floor(nilai / 100)) + " Ratus" + angkaMenjadiTerbilang(nilai % 100); }
-    else if (nilai < 2000) { temp = " Seribu" + angkaMenjadiTerbilang(nilai - 1000); }
-    else if (nilai < 1000000) { temp = angkaMenjadiTerbilang(Math.floor(nilai / 1000)) + " Ribu" + angkaMenjadiTerbilang(nilai % 1000); }
-    else if (nilai < 1000000000) { temp = angkaMenjadiTerbilang(Math.floor(nilai / 1000000)) + " Juta" + angkaMenjadiTerbilang(nilai % 1000000); }
-    return temp.trim();
-}
-
-function muatAwalLaporanSPP() {
-    const hariIni = new Date().toISOString().split('T')[0];
-    document.getElementById('spp-f-start').value = hariIni;
-    document.getElementById('spp-f-end').value = hariIni;
-    prosesTarikRekapSPP();
-}
-
-let cacheArrayLaporanSPP = [];
-
-async function prosesTarikRekapSPP() {
-    const startVal = document.getElementById('spp-f-start').value;
-    const endVal = document.getElementById('spp-f-end').value;
-    const areaRows = document.getElementById('area-rekap-spp-rows');
-    
-    areaRows.innerHTML = `<tr><td colspan="10" class="text-center"><span class="spinner-border spinner-border-sm me-2"></span>Menarik rekap transaksi...</td></tr>`;
-    
-    try {
-        const res = await callGAS('getRekapSPP', { startVal: startVal, endVal: endVal });
-        if(res && res.success && res.data) {
-            cacheArrayLaporanSPP = res.data;
-            
-            let html = "";
-            let totalLunas = 0;
-            let totalPending = 0;
-            
-            if(cacheArrayLaporanSPP.length === 0) {
-                areaRows.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-3">Tidak ditemukan data transaksi pada periode ini.</td></tr>`;
-                document.getElementById('txt-total-lunas-spp').innerText = "Rp 0";
-                document.getElementById('txt-total-pending-spp').innerText = "Rp 0";
-                return;
-            }
-            
-            cacheArrayLaporanSPP.forEach((item, index) => {
-                const nominal = Number(item.nominal) || 0;
-                if(item.status === "Berhasil" || item.status === "Lunas") totalLunas += nominal;
-                if(item.status === "Pending") totalPending += nominal;
-                
-                let badgeStyle = item.status === "Berhasil" ? "badge bg-success" : (item.status === "Pending" ? "badge bg-warning text-dark" : "badge bg-danger");
-                
-                html += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><small class="fw-bold">${item.id}</small></td>
-                        <td><small>${item.tanggal || '-'}</small></td>
-                        <td>${item.nis || '-'}</td>
-                        <td class="text-start"><strong>${item.nama || '-'}</strong></td>
-                        <td><small>${item.unit || '-'} / ${item.kelas || '-'}</small></td>
-                        <td><span class="text-primary fw-bold">${item.bulan || '-'}</span></td>
-                        <td>Rp ${nominal.toLocaleString('id-ID')}</td>
-                        <td><small class="text-muted">${item.metode || '-'}</small></td>
-                        <td><span class="${badgeStyle}">${item.status}</span></td>
-                    </tr>
-                `;
-            });
-            
-            areaRows.innerHTML = html;
-            document.getElementById('txt-total-lunas-spp').innerText = "Rp " + totalLunas.toLocaleString('id-ID');
-            document.getElementById('txt-total-pending-spp').innerText = "Rp " + totalPending.toLocaleString('id-ID');
-        } else {
-            areaRows.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Gagal memuat rekap: ${res.message}</td></tr>`;
-        }
-    } catch(err) {
-        areaRows.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error menghubungi sistem database.</td></tr>`;
-    }
-}
-
-function exportDataSPP(tipeFormat) {
-    const tabelElement = document.getElementById('tabel-rekap-spp-export');
-    if(!tabelElement || cacheArrayLaporanSPP.length === 0) return alert("Data kosong atau belum dimuat!");
-    
-    const startVal = document.getElementById('spp-f-start').value;
-    const endVal = document.getElementById('spp-f-end').value;
-    const periodeTxt = (startVal && endVal) ? `${startVal} s/d ${endVal}` : "Semua Periode";
-    const tglCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    const namaFile = `Rekap_Laporan_SPP_${Date.now()}`;
-
-    if(tipeFormat === 'print') {
-        const printWindow = window.open('', '_blank');
-        const clonedTable = tabelElement.cloneNode(true);
-        const thead = clonedTable.querySelector('thead');
-        
-        const kopRow = document.createElement('tr');
-        kopRow.innerHTML = `
-            <td colspan="10" style="border:none !important; background:#fff !important; color:#000 !important; padding-bottom:15px !important;">
-                <div style="text-center; border-bottom: 2px solid #000; padding-bottom:5px; text-align:center; margin-bottom:10px;">
-                    <h4 style="margin:0; font-weight:bold; font-size:16px;">YAYASAN PENDIDIKAN AL-ISHLAH</h4>
-                    <p style="margin:2px 0 0 0; font-size:11px;">Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo - Telp: (0435) 830969</p>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-end; font-size:11px; font-weight:normal;">
-                    <div><h5>LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA</h5>Periode: <b>${periodeTxt}</b></div>
-                    <div>Tanggal Cetak: ${tglCetak}</div>
-                </div>
-            </td>
-        `;
-        thead.insertBefore(kopRow, thead.firstChild);
-
-        printWindow.document.write(`
-            <html>
-            <head>
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-                <style>
-                    @page { size: A4 landscape; margin: 10mm; }
-                    body { font-size: 10px; color:#000; }
-                    th, td { padding: 4px !important; font-size: 9px !important; border:1px solid #ccc !important; }
-                    thead tr:not(:first-child) th { background-color: #222 !important; color:#fff !important; }
-                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                </style>
-            </head>
-            <body>
-                ${clonedTable.outerHTML}
-                <script>window.onload = function(){ window.print(); setTimeout(function(){ window.close(); }, 500); };<\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-
-    } else if(tipeFormat === 'xlsx') {
-        const dataAoaKop = [
-            ["YAYASAN PENDIDIKAN AL-ISHLAH"],
-            ["Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo"],
-            [""],
-            ["LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA"],
-            [`Periode: ${periodeTxt}`],
-            [`Tanggal Cetak: ${tglCetak}`],
-            [""]
-        ];
-        const ws = XLSX.utils.aoa_to_sheet(dataAoaKop);
-        XLSX.utils.sheet_add_dom(ws, tabelElement, { origin: "A8" });
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Rekap SPP");
-        XLSX.writeFile(wb, namaFile + ".xlsx");
-
-    } else if(tipeFormat === 'pdf') {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4');
-        const pWidth = doc.internal.pageSize.getWidth();
-
-        const drawHeaderKopSPP = () => {
-            doc.setFont("helvetica", "bold").setFontSize(14);
-            doc.text("YAYASAN PENDIDIKAN AL-ISHLAH", pWidth / 2, 14, { align: "center" });
-            doc.setFont("helvetica", "normal").setFontSize(9);
-            doc.text("Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo - Telp: (0435) 830969", pWidth / 2, 19, { align: "center" });
-            doc.setLineWidth(0.5).line(14, 22, pWidth - 14, 22);
-            doc.setFont("helvetica", "bold").setFontSize(11).text("LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA", 14, 29);
-            doc.setFont("helvetica", "normal").setFontSize(9).text(`Periode: ${periodeTxt}`, 14, 34);
-            doc.text(`Tanggal Cetak: ${tglCetak}`, pWidth - 14, 34, { align: "right" });
-        };
-
-        doc.autoTable({
-            html: '#tabel-rekap-spp-export',
-            startY: 38,
-            theme: 'grid',
-            styles: { fontSize: 8, cellPadding: 2 },
-            headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], halign: 'center' },
-            didDrawPage: () => { drawHeaderKopSPP(); }
-        });
-        doc.save(namaFile + ".pdf");
-    }
 }
 	
   function hitungDurasi() {
