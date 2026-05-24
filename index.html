@@ -452,6 +452,26 @@
           <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
               <h5 class="mb-0" id="title-panel-spp"><i class="fas fa-calculator me-2"></i>Form Pembayaran SPP</h5>
               </div>
+		  <div class="row g-2 mb-3">
+  <div class="col-md-4">
+    <input type="text" id="spp-search-input" class="form-control form-control-sm" placeholder="Cari NIS / Nama Siswa..." onkeyup="filterTabelSPPLokal()">
+  </div>
+  <div class="col-md-3">
+    <select id="spp-filter-status" class="form-select form-select-sm" onchange="filterTabelSPPLokal()">
+      <option value="all">Semua Status</option>
+      <option value="Disetujui">Disetujui</option>
+      <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
+      <option value="Ditolak">Ditolak</option>
+    </select>
+  </div>
+  <div class="col-md-5 text-end">
+    <div class="btn-group btn-group-sm shadow-sm">
+      <button class="btn btn-success fw-bold" onclick="exportSPPToExcel()"><i class="fa fa-file-excel me-1"></i> Excel</button>
+      <button class="btn btn-danger fw-bold" onclick="exportSPPToPDF()"><i class="fa fa-file-pdf me-1"></i> PDF</button>
+      <button class="btn btn-warning fw-bold text-dark" onclick="printSPPTable()"><i class="fa fa-print me-1"></i> Cetak</button>
+    </div>
+  </div>
+</div>
           <div class="card-body">
               <form id="form-bayar-spp" onsubmit="handleBayarSPP(event)">
                   <div class="row g-3">
@@ -592,7 +612,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwnKdWI_aKzuZFfqbXd_5O2XI_oKxA3990mAF0mR_tD3nNL8_wbn8cdUTjDuNQK6zeZqA/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzJDkgK6VLChNpj0QE_cDCb6rlCHm-nNaESKPjw-6ZbHdBS2ivSmyHBgiT0jBsxrT0XOQ/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -1104,6 +1124,295 @@ function muatUlangHistori() {
 function cariHistoriAdmin() {
   const keyword = document.getElementById("cari-spp-admin").value.trim();
   loadHistoriSPP(keyword);
+}
+
+let globalSPPData = [];
+
+function inisialisasiMenuSPP() {
+  showLoader("Memuat data transaksi SPP...");
+  fetchAPI("getAllSPPData", {}, (res) => {
+    hideLoader();
+    if (res && res.success) {
+      globalSPPData = res.data;
+      renderTabelSPPAplikasi(globalSPPData);
+    } else {
+      alert("Gagal memuat data SPP: " + (res.message || "Error tidak diketahui"));
+    }
+  });
+}
+
+function renderTabelSPPAplikasi(dataArray) {
+  let html = "";
+  if(dataArray.length === 0) {
+    html = `<tr><td colspan="10" class="text-center text-muted small py-3">Tidak ada data transaksi pembayaran SPP</td></tr>`;
+  } else {
+    dataArray.forEach((row, index) => {
+      let badgeColor = "bg-warning text-dark";
+      if(row.status === "Disetujui") badgeColor = "bg-success";
+      if(row.status === "Ditolak") badgeColor = "bg-danger";
+
+      html += `<tr>
+        <td class="small text-center">${index + 1}</td>
+        <td class="small">${row.tanggal || '-'}</td>
+        <td class="small fw-bold">${row.nis || '-'}</td>
+        <td class="small fw-bold">${row.nama || '-'}</td>
+        <td class="small text-center">${row.unit || '-'} - ${row.kelas || '-'}</td>
+        <td class="small">${row.bulan || '-'}</td>
+        <td class="small fw-bold text-end">Rp ${parseInt(row.nominal || 0).toLocaleString('id-ID')}</td>
+        <td class="small text-center">${row.metode || '-'}</td>
+        <td class="small text-center"><span class="badge ${badgeColor}">${row.status || '-'}</span></td>
+        <td class="small text-center text-nowrap">
+          <button class="btn btn-primary btn-sm rounded-3 py-1 px-2" style="font-size:11px;" onclick='cetakKwitansiSatuan(${JSON.stringify(row)})'>
+            <i class="fa fa-receipt me-1"></i> Kwitansi
+          </button>
+        </td>
+      </tr>`;
+    });
+  }
+  document.getElementById("body-tabel-spp-admin").innerHTML = html; // Sesuaikan ID element tbody tabel Anda
+}
+
+function filterTabelSPPLokal() {
+  let keyword = document.getElementById("spp-search-input").value.toLowerCase().trim();
+  let filterStatus = document.getElementById("spp-filter-status").value;
+  
+  let filtered = globalSPPData.filter(row => {
+    let matchKeyword = (row.nis && row.nis.toLowerCase().includes(keyword)) || 
+                       (row.nama && row.nama.toLowerCase().includes(keyword)) ||
+                       (row.bulan && row.bulan.toLowerCase().includes(keyword));
+    let matchStatus = (filterStatus === "all") || (row.status === filterStatus);
+    return matchKeyword && matchStatus;
+  });
+  
+  renderTabelSPPAplikasi(filtered);
+}
+
+function exportSPPToExcel() {
+  if (globalSPPData.length === 0) return alert("Tidak ada data untuk diexport!");
+  
+  let keyword = document.getElementById("spp-search-input").value.toLowerCase().trim();
+  let filterStatus = document.getElementById("spp-filter-status").value;
+  
+  let dataExport = globalSPPData.filter(row => {
+    let matchKeyword = (row.nis && row.nis.toLowerCase().includes(keyword)) || 
+                       (row.nama && row.nama.toLowerCase().includes(keyword));
+    let matchStatus = (filterStatus === "all") || (row.status === filterStatus);
+    return matchKeyword && matchStatus;
+  });
+
+  let rows = [
+    ["LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA"],
+    ["MySchool PRO - YAYASAN PENDIDIKAN AL-ISHLAH"],
+    [], // Baris kosong
+    ["No", "Tanggal", "NIS", "Nama Siswa", "Unit", "Kelas", "Bulan Pembayaran", "Nominal", "Metode", "Status"]
+  ];
+  
+  dataExport.forEach((r, idx) => {
+    rows.push([
+      idx + 1,
+      r.tanggal,
+      r.nis,
+      r.nama,
+      r.unit,
+      r.kelas,
+      r.bulan,
+      parseInt(r.nominal || 0),
+      r.metode,
+      r.status
+    ]);
+  });
+  
+  let wb = XLSX.utils.book_new();
+  let ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, "Rekap_SPP");
+  XLSX.writeFile(wb, "Rekap_Pembayaran_SPP_" + new Date().toISOString().slice(0,10) + ".xlsx");
+}
+
+function exportSPPToPDF() {
+  if (globalSPPData.length === 0) return alert("Tidak ada data untuk diexport!");
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l', 'mm', 'a4'); // Format Landscape A4
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text("YAYASAN PENDIDIKAN AL-ISHLAH", pageWidth / 2, 15, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo - Telp: (0435) 830969", pageWidth / 2, 20, { align: "center" });
+
+  doc.setLineWidth(0.5);
+  doc.line(14, 23, pageWidth - 14, 23);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("LAPORAN REKAPITULASI DATA PEMBAYARAN SPP", 14, 30);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Dicetak Pada: ${new Date().toLocaleString('id-ID')}`, 14, 35);
+
+  let keyword = document.getElementById("spp-search-input").value.toLowerCase().trim();
+  let filterStatus = document.getElementById("spp-filter-status").value;
+  let filtered = globalSPPData.filter(row => {
+    let matchKeyword = (row.nis && row.nis.toLowerCase().includes(keyword)) || (row.nama && row.nama.toLowerCase().includes(keyword));
+    let matchStatus = (filterStatus === "all") || (row.status === filterStatus);
+    return matchKeyword && matchStatus;
+  });
+
+  let tableBody = filtered.map((r, idx) => [
+    idx + 1,
+    r.tanggal,
+    r.nis,
+    r.nama,
+    `${r.unit} - ${r.kelas}`,
+    r.bulan,
+    "Rp " + parseInt(r.nominal || 0).toLocaleString('id-ID'),
+    r.metode,
+    r.status
+  ]);
+
+  doc.autoTable({
+    startY: 40,
+    head: [["No", "Tanggal", "NIS", "Nama Siswa", "Unit/Kelas", "Bulan", "Nominal", "Metode", "Status"]],
+    body: tableBody,
+    theme: 'striped',
+    headStyles: { fillColor: [79, 70, 229] },
+    styles: { fontSize: 8 }
+  });
+
+  doc.save("Rekap_SPP_MySchool_" + new Date().toISOString().slice(0,10) + ".pdf");
+}
+
+function printSPPTable() {
+  let keyword = document.getElementById("spp-search-input").value.toLowerCase().trim();
+  let filterStatus = document.getElementById("spp-filter-status").value;
+  let filtered = globalSPPData.filter(row => {
+    let matchKeyword = (row.nis && row.nis.toLowerCase().includes(keyword)) || (row.nama && row.nama.toLowerCase().includes(keyword));
+    let matchStatus = (filterStatus === "all") || (row.status === filterStatus);
+    return matchKeyword && matchStatus;
+  });
+
+  let printWindow = window.open('', '_blank', 'height=600,width=900');
+  printWindow.document.write('<html><head><title>Cetak Rekapitulasi SPP</title>');
+  printWindow.document.write('<style>');
+  printWindow.document.write('body { font-family: sans-serif; padding: 20px; }');
+  printWindow.document.write('.kop { text-align: center; margin-bottom: 5px; }');
+  printWindow.document.write('.kop h2 { margin: 0; font-size: 18px; }');
+  printWindow.document.write('.kop p { margin: 5px 0; font-size: 12px; }');
+  printWindow.document.write('.line { border-bottom: 2px solid #000; margin-bottom: 15px; }');
+  printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }');
+  printWindow.document.write('th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }');
+  printWindow.document.write('th { background-color: #4f46e5; color: white; }');
+  printWindow.document.write('.text-end { text-align: right; }');
+  printWindow.document.write('</style></head><body>');
+  printWindow.document.write('<div class="kop">');
+  printWindow.document.write('<h2>YAYASAN PENDIDIKAN AL-ISHLAH</h2>');
+  printWindow.document.write('<p>Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo - Telp: (0435) 830969</p>');
+  printWindow.document.write('</div>');
+  printWindow.document.write('<div class="line"></div>');
+  printWindow.document.write('<h3>LAPORAN REKAPITULASI PEMBAYARAN SPP</h3>');
+  printWindow.document.write('<p style="font-size:11px;">Tanggal Cetak: ' + new Date().toLocaleString('id-ID') + '</p>');
+  
+  printWindow.document.write('<table><thead><tr><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama Siswa</th><th>Unit/Kelas</th><th>Bulan</th><th class="text-end">Nominal</th><th>Metode</th><th>Status</th></tr></thead><tbody>');
+  
+  filtered.forEach((r, idx) => {
+    printWindow.document.write(`<tr>
+      <td>${idx + 1}</td>
+      <td>${r.tanggal}</td>
+      <td>${r.nis}</td>
+      <td>${r.nama}</td>
+      <td>${r.unit} - ${r.kelas}</td>
+      <td>${r.bulan}</td>
+      <td class="text-end">Rp ${parseInt(r.nominal || 0).toLocaleString('id-ID')}</td>
+      <td>${r.metode}</td>
+      <td>${r.status}</td>
+    </tr>`);
+  });
+  
+  printWindow.document.write('</tbody></table></body></html>');
+  printWindow.document.close();
+  printWindow.print();
+}
+
+function cetakKwitansiSatuan(dataSPPRow) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a5'); // Kwitansi sangat cocok menggunakan ukuran kertas A5 Potrait
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("YAYASAN PENDIDIKAN AL-ISHLAH", pageWidth / 2, 12, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo - Telp: (0435) 830969", pageWidth / 2, 16, { align: "center" });
+
+  doc.setLineWidth(0.4);
+  doc.line(10, 19, pageWidth - 10, 19);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("KWITANSI BUKTI PEMBAYARAN SPP", pageWidth / 2, 26, { align: "center" });
+  
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text("No. Transaksi SPP: #SPP-" + (dataSPPRow.id || dataSPPRow.rowindex || '000'), pageWidth / 2, 30, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  
+  let currentY = 40;
+  const labelX = 12;
+  const valueX = 45;
+  const lineSpacing = 7;
+
+  const detailData = [
+    { label: "Telah Diterima Dari", val: `: ${dataSPPRow.nama.toUpperCase()}` },
+    { label: "Nomor Induk Siswa (NIS)", val: `: ${dataSPPRow.nis}` },
+    { label: "Unit / Kelas", val: `: ${dataSPPRow.unit} / ${dataSPPRow.kelas}` },
+    { label: "Untuk Pembayaran SPP", val: `: Bulan ${dataSPPRow.bulan}` },
+    { label: "Tanggal Transaksi", val: `: ${dataSPPRow.tanggal}` },
+    { label: "Metode Pembayaran", val: `: ${dataSPPRow.metode}` },
+    { label: "Status Verifikasi", val: `: ${dataSPPRow.status}` }
+  ];
+
+  detailData.forEach(item => {
+    doc.setFont("helvetica", "bold");
+    doc.text(item.label, labelX, currentY);
+    doc.setFont("helvetica", "normal");
+    doc.text(item.val, valueX, currentY);
+    currentY += lineSpacing;
+  });
+
+  currentY += 4;
+  doc.setFillColor(240, 240, 250);
+  doc.roundedRect(10, currentY, pageWidth - 20, 12, 2, 2, "F");
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(79, 70, 229);
+  doc.text(`JUMLAH: Rp ${parseInt(dataSPPRow.nominal || 0).toLocaleString('id-ID')},-`, 14, currentY + 8);
+  
+  doc.setTextColor(0, 0, 0);
+
+  currentY += 25;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Gorontalo, " + dataSPPRow.tanggal.split(" ")[0], pageWidth - 55, currentY);
+  doc.text("Bendahara Sekolah,", pageWidth - 55, currentY + 6);
+  
+  doc.setLineWidth(0.2);
+  doc.line(pageWidth - 55, currentY + 24, pageWidth - 15, currentY + 24);
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text("MySchool PRO Digital Sign", pageWidth - 55, currentY + 28);
+
+  doc.autoPrint();
+  const blobUrl = doc.output("bloburl");
+  window.open(blobUrl, "_blank");
 }
 	
   function hitungDurasi() {
