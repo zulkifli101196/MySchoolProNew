@@ -531,33 +531,33 @@
           <div class="card-body">
               
               <div id="filter-admin-spp" class="row g-2 mb-3 d-none">
-                  <div class="col-md-4">
-                      <label class="small fw-bold">Pencarian Nama/NIS</label>
-                      <div class="input-group">
-                          <input type="text" id="cari-spp-admin" class="form-control" placeholder="Ketik keyword...">
-                          <button class="btn btn-primary" onclick="cariHistoriAdmin()"><i class="fas fa-search"></i></button>
-                      </div>
-                  </div>
-                  <div class="col-md-3">
-                      <label class="small fw-bold">Filter Unit</label>
-                      <select id="filter-spp-unit" class="form-select" onchange="saringTabelLokal()">
-                          <option value="">-- Semua Unit --</option>
-                      </select>
-                  </div>
-                  <div class="col-md-3">
-                      <label class="small fw-bold">Filter Kelas</label>
-                      <select id="filter-spp-kelas" class="form-select" onchange="saringTabelLokal()">
-                          <option value="">-- Semua Kelas --</option>
-                      </select>
-                  </div>
-				  <div class="col-md-5 text-end d-flex align-items-end justify-content-end">
-       				 <div class="btn-group btn-group-sm shadow-sm">
-           				 <button type="button" class="btn btn-success fw-bold" onclick="exportSPPToExcel()"><i class="fa fa-file-excel me-1"></i> Excel</button>
-            			 <button type="button" class="btn btn-danger fw-bold" onclick="exportSPPToPDF()"><i class="fa fa-file-pdf me-1"></i> PDF</button>
-           				 <button type="button" class="btn btn-warning fw-bold text-dark" onclick="printSPPTable()"><i class="fa fa-print me-1"></i> Cetak</button>
+                 <div class="col-md-3">
+                    <label class="small fw-bold">Pencarian Nama/NIS</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="cari-spp-admin" class="form-control" placeholder="Ketik nama/NIS..." onkeyup="saringTabelLokal()">
+                        <button class="btn btn-primary" onclick="cariHistoriAdmin()"><i class="fas fa-search"></i></button>
                     </div>
-                 </div>
-			  </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold">Filter Unit</label>
+                    <select id="filter-spp-unit" class="form-select form-select-sm" onchange="saringTabelLokal()">
+                        <option value="">-- Semua Unit --</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold">Filter Kelas</label>
+                    <select id="filter-spp-kelas" class="form-select form-select-sm" onchange="saringTabelLokal()">
+                        <option value="">-- Semua Kelas --</option>
+                    </select>
+                </div>
+                <div class="col-md-5 text-end d-flex align-items-end justify-content-end">
+                     <div class="btn-group btn-group-sm shadow-sm">
+                        <button type="button" class="btn btn-success fw-bold" onclick="exportSPPToExcel()"><i class="fa fa-file-excel me-1"></i> Excel</button>
+                        <button type="button" class="btn btn-danger fw-bold" onclick="exportSPPToPDF()"><i class="fa fa-file-pdf me-1"></i> PDF</button>
+                        <button type="button" class="btn btn-warning fw-bold text-dark" onclick="printSPPTable()"><i class="fa fa-print me-1"></i> Cetak</button>
+                    </div>
+                </div>
+            </div>
 
               <div class="table-responsive">
                   <table class="table table-bordered table-hover align-middle mb-0" id="tabel-spp">
