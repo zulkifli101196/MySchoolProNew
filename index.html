@@ -1036,7 +1036,6 @@ function renderTabelSpp(arrData, role) {
     let kolomKwitansiTerpisah = "";
 
     if (role === "admin") {
-      // Kolom Aksi Verifikasi
       if (item.status === "Pending" || item.status === "Menunggu Persetujuan") {
         kolomAksiAdmin = `
           <td class="text-center text-nowrap">
@@ -1207,22 +1206,34 @@ function exportSPPToExcel() {
     ["LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA"],
     ["YAYASAN PENDIDIKAN AL-ISHLAH GORONTALO"],
     ["Tanggal Unduh: " + new Date().toLocaleString('id-ID')],
-    [], // Baris pembatas kosong
+    [], 
     ["No", "Tanggal Transaksi", "NIS", "Nama Siswa", "Unit", "Kelas", "Bulan Tagihan", "Nominal (Rp)", "Metode Pembayaran", "Status"]
   ];
   
   dataExport.forEach((r, idx) => {
+    // Pembersihan Format Tanggal untuk Excel
+    let tglClean = "-";
+    if (r.tanggal) {
+      if (typeof r.tanggal === 'object' && r.tanggal.value) {
+        tglClean = r.tanggal.value.toString();
+      } else if (typeof r.tanggal === 'string') {
+        tglClean = r.tanggal.replace("T", " ").substring(0, 16);
+      } else {
+        tglClean = r.tanggal.toString();
+      }
+    }
+
     rows.push([
       idx + 1,
-      r.tanggal,
-      r.nis,
-      r.nama,
-      r.unit,
-      r.kelas,
-      r.bulan,
-      Number(r.nominal || 0),
+      tglClean,
+      r.nis ? r.nis.toString() : "-",
+      r.nama || "-",
+      r.unit || "-",
+      r.kelas || "-",
+      r.bulan || "-",
+      r.nominal ? Number(r.nominal) : 0,
       r.metode || r.jenis_pembayaran || "-",
-      r.status
+      r.status || "-"
     ]);
   });
   
@@ -1236,7 +1247,7 @@ function exportSPPToPDF() {
   if (!cacheHistoriSpp || cacheHistoriSpp.length === 0) return alert("Tidak ada data rekap!");
   
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('l', 'mm', 'a4'); // Format Landscape agar tabel muat sempurna
+  const doc = new jsPDF('l', 'mm', 'a4'); 
   const pageWidth = doc.internal.pageSize.getWidth();
 
   const fUnit = document.getElementById("filter-spp-unit").value.toLowerCase();
@@ -1267,30 +1278,43 @@ function exportSPPToPDF() {
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text(`Dicetak Oleh Admin Pada: ${new Date().toLocaleString('id-ID')}`, 14, 35);
+  doc.text(`Dicetak Pada: ${new Date().toLocaleString('id-ID')}`, 14, 35);
 
-  let tableBody = filtered.map((item, idx) => [
-    idx + 1,
-    item.tanggal || '-',
-    item.nis || '-',
-    item.nama || '-',
-    `${item.unit} / ${item.kelas}`,
-    item.bulan || '-',
-    "Rp " + (Number(item.nominal) || 0).toLocaleString('id-ID'),
-    item.metode || item.jenis_pembayaran || "-",
-    item.status || '-'
-  ]);
+  let tableBody = filtered.map((item, idx) => {
+    let tglClean = "-";
+    if (item.tanggal) {
+      if (typeof item.tanggal === 'object' && item.tanggal.value) {
+        tglClean = item.tanggal.value.toString();
+      } else if (typeof item.tanggal === 'string') {
+        tglClean = item.tanggal.replace("T", " ").substring(0, 16);
+      } else {
+        tglClean = item.tanggal.toString();
+      }
+    }
+
+    return [
+      idx + 1,
+      tglClean,
+      item.nis ? item.nis.toString() : "-",
+      item.nama || '-',
+      `${item.unit || '-'} / ${item.kelas || '-'}`,
+      item.bulan || '-',
+      "Rp " + (Number(item.nominal) || 0).toLocaleString('id-ID'),
+      item.metode || item.jenis_pembayaran || "-",
+      item.status || '-'
+    ];
+  });
 
   doc.autoTable({
     startY: 40,
     head: [["No", "Tanggal", "NIS", "Nama Siswa", "Unit/Kelas", "Bulan Tagihan", "Nominal", "Metode", "Status"]],
     body: tableBody,
     theme: 'striped',
-    headStyles: { fillColor: [13, 110, 253] }, // Menyesuaikan warna bg-primary Bootstrap Anda
+    headStyles: { fillColor: [13, 110, 253] }, 
     styles: { fontSize: 8.5 }
   });
 
-  doc.save("Rekap_SPP_MySchool_" + new Date().toISOString().slice(0,10) + ".pdf");
+  doc.save("Rekap_SPP_AlIshlah_" + new Date().toISOString().slice(0,10) + ".pdf");
 }
 
 function printSPPTable() {
@@ -1331,17 +1355,29 @@ function printSPPTable() {
   pWin.document.write('<table><thead><tr><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama Siswa</th><th>Unit/Kelas</th><th>Bulan</th><th class="text-right">Nominal</th><th>Metode</th><th>Status</th></tr></thead><tbody>');
   
   filtered.forEach((item, idx) => {
+
+    let tglClean = "-";
+    if (item.tanggal) {
+      if (typeof item.tanggal === 'object' && item.tanggal.value) {
+        tglClean = item.tanggal.value.toString();
+      } else if (typeof item.tanggal === 'string') {
+        tglClean = item.tanggal.replace("T", " ").substring(0, 16);
+      } else {
+        tglClean = item.tanggal.toString();
+      }
+    }
+
     let metode = item.metode || item.jenis_pembayaran || "-";
     pWin.document.write(`<tr>
       <td>${idx + 1}</td>
-      <td>${item.tanggal || '-'}</td>
-      <td>${item.nis || '-'}</td>
+      <td>${tglClean}</td>
+      <td>${item.nis ? item.nis.toString() : "-"}</td>
       <td><strong>${item.nama || '-'}</strong></td>
-      <td>${item.unit} / ${item.kelas}</td>
-      <td>${item.bulan}</td>
+      <td>${item.unit || '-'} / ${item.kelas || '-'}</td>
+      <td>${item.bulan || '-'}</td>
       <td class="text-right">Rp ${(Number(item.nominal) || 0).toLocaleString('id-ID')}</td>
       <td>${metode}</td>
-      <td>${item.status}</td>
+      <td>${item.status || '-'}</td>
     </tr>`);
   });
   
@@ -1350,7 +1386,6 @@ function printSPPTable() {
   
   setTimeout(() => { pWin.print(); }, 500);
 }
-
 function cetakKwitansiSatuan(dataRow) {
   if (!dataRow) return alert("Gagal memproses data transaksi.");
   
