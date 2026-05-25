@@ -1355,13 +1355,13 @@ function cetakKwitansiSatuan(dataRow) {
   if (!dataRow) return alert("Gagal memproses data transaksi.");
   
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'mm', 'a5');
+  const doc = new jsPDF('p', 'mm', 'a4');
   const pageWidth = doc.internal.pageSize.getWidth();
 
   let tanggalSpp = "-";
   if (dataRow.tanggal) {
     if (typeof dataRow.tanggal === 'object' && dataRow.tanggal.value) {
-      tanggalSpp = dataRow.tanggal.value;
+      tanggalSpp = dataRow.tanggal.value.toString();
     } else if (typeof dataRow.tanggal === 'string') {
       tanggalSpp = dataRow.tanggal.replace("T", " ").substring(0, 16);
     } else {
@@ -1390,34 +1390,36 @@ function cetakKwitansiSatuan(dataRow) {
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8);
   doc.setTextColor(100, 100, 100);
-  doc.text("ID Transaksi: #SPP-" + (dataRow.id || "000"), pageWidth / 2, 32, { align: "center" });
+  
+  let idTransaksi = dataRow.id ? dataRow.id.toString() : "000";
+  doc.text("ID Transaksi: #SPP-" + idTransaksi, pageWidth / 2, 32, { align: "center" });
   doc.setTextColor(0, 0, 0);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9.5);
   
   let startY = 44;
-  const colXLabel = 14;
-  const colXTitik = 58;
-  const colXValue = 61;
-  const rowHeight = 7.5;
+  const colXLabel = 14;  
+  const colXTitik = 58;  
+  const colXValue = 61;  
+  const rowHeight = 7.5; 
 
   let metodeFix = dataRow.metode || dataRow.jenis_pembayaran || "-";
 
   const dataFields = [
-    { label: "Telah Diterima Dari", val: dataRow.nama ? dataRow.nama.toUpperCase() : "-" },
-    { label: "NIS Siswa", val: dataRow.nis || '-' },
-    { label: "Unit / Kelas", val: `${dataRow.unit || '-'} / ${dataRow.kelas || '-'}` },
-    { label: "Untuk Pembayaran", val: `SPP BULAN ${dataRow.bulan ? dataRow.bulan.toUpperCase() : '-'}` },
-    { label: "Tanggal Transaksi", val: tanggalSpp },
-    { label: "Metode Pembayaran", val: metodeFix },
-    { label: "Status Verifikasi", val: dataRow.status === 'Berhasil' ? "LUNAS / DISETUJUI" : dataRow.status }
+    { label: "Telah Diterima Dari", val: dataRow.nama ? dataRow.nama.toString().toUpperCase() : "-" },
+    { label: "NIS Siswa", val: dataRow.nis ? dataRow.nis.toString() : "-" },
+    { label: "Unit / Kelas", val: `${dataRow.unit ? dataRow.unit.toString() : '-'} / ${dataRow.kelas ? dataRow.kelas.toString() : '-'}` },
+    { label: "Untuk Pembayaran", val: `SPP BULAN ${dataRow.bulan ? dataRow.bulan.toString().toUpperCase() : '-'}` },
+    { label: "Tanggal Transaksi", val: tanggalSpp.toString() },
+    { label: "Metode Pembayaran", val: metodeFix.toString() },
+    { label: "Status Verifikasi", val: dataRow.status === 'Berhasil' ? "LUNAS / DISETUJUI" : dataRow.status.toString() }
   ];
 
   dataFields.forEach(item => {
     doc.setFont("helvetica", "normal");
     doc.text(item.label, colXLabel, startY);
-    doc.text(":", colXTitik, startY);
+    doc.text(":", colXTitik, startY); 
     
     if(item.label === "Telah Diterima Dari" || item.label === "Untuk Pembayaran") {
       doc.setFont("helvetica", "bold");
@@ -1427,14 +1429,14 @@ function cetakKwitansiSatuan(dataRow) {
   });
 
   startY += 4;
-  doc.setFillColor(240, 244, 253);
-  doc.setDrawColor(13, 110, 253);
+  doc.setFillColor(240, 244, 253); 
+  doc.setDrawColor(13, 110, 253); 
   doc.setLineWidth(0.3);
-  doc.roundedRect(12, startY, pageWidth - 24, 13, 1.5, 1.5, "FD");
+  doc.roundedRect(12, startY, pageWidth - 24, 13, 1.5, 1.5, "FD"); 
   
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.setTextColor(13, 110, 253);
+  doc.setTextColor(13, 110, 253); 
   doc.text(`TOTAL: Rp ${(Number(dataRow.nominal) || 0).toLocaleString('id-ID')},-`, 17, startY + 8.5);
   
   doc.setTextColor(0, 0, 0);
@@ -1444,7 +1446,7 @@ function cetakKwitansiSatuan(dataRow) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   
-  doc.text("Gorontalo, " + tanggalSaja, pageWidth - 55, startY);
+  doc.text("Gorontalo, " + tanggalSaja.toString(), pageWidth - 55, startY);
   doc.text("Bendahara Sekolah,", pageWidth - 55, startY + 5);
   
   doc.setLineWidth(0.2);
