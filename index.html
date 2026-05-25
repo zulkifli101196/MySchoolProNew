@@ -560,7 +560,7 @@
             </div>
 
               <div class="table-responsive">
-                  <table class="table table-bordered table-hover align-middle mb-0" id="tabel-spp">
+                  <table class="table table-bordered table-striped table-hover align-middle" style="font-size:13px;">
                       <thead class="table-light">
                           <tr>
                               <th>Tanggal</th>
@@ -572,8 +572,7 @@
                               <th>Metode</th>
                               <th>Bukti</th>
                               <th>Status</th>
-                              <th id="th-aksi-admin" class="d-none">Aksi Verifikasi</th>
-                          </tr>
+                              <th>Aksi</th>     <th>Kwitansi</th> </tr>
                       </thead>
                       <tbody id="data-histori-spp">
                           <tr>
@@ -1000,12 +999,23 @@ function renderTabelSpp(arrData, role) {
   if(!tbody) return;
   
   if(arrData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-3 small">Data transaksi tidak ditemukan.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-3 small">Data transaksi tidak ditemukan.</td></tr>`;
     return;
   }
 
   let html = "";
   arrData.forEach(item => {
+    let tanggalFix = "-";
+    if (item.tanggal) {
+      if (typeof item.tanggal === 'object' && item.tanggal.value) {
+        tanggalFix = item.tanggal.value;
+      } else if (typeof item.tanggal === 'string') {
+        tanggalFix = item.tanggal.replace("T", " ").substring(0, 16);
+      } else {
+        tanggalFix = item.tanggal.toString();
+      }
+    }
+
     let badge = `<span class="badge bg-success">Berhasil</span>`;
     if(item.status === "Pending" || item.status === "Menunggu Persetujuan") {
       badge = `<span class="badge bg-warning text-dark">Pending</span>`;
@@ -1018,38 +1028,44 @@ function renderTabelSpp(arrData, role) {
       linkBukti = `<a href="${item.buktiUrl}" target="_blank" class="btn btn-xs btn-outline-primary py-0 px-1" style="font-size:11px;"><i class="fas fa-image"></i> Lihat</a>`;
     }
 
+    let metodeBayar = item.metode || item.jenis_pembayaran || "-";
+
     let kolomAksiAdmin = "";
+    let kolomKwitansiTerpisah = "";
+
     if (role === "admin") {
       if (item.status === "Pending" || item.status === "Menunggu Persetujuan") {
         kolomAksiAdmin = `
           <td class="text-center text-nowrap">
             <button class="btn btn-xs btn-success py-0 px-1 me-1" title="Setujui" onclick="eksekusiApprovalSpp('${item.id}', 'Berhasil')"><i class="fa fa-check"></i></button>
-            <button class="btn btn-xs btn-danger py-0 px-1 me-1" title="Tolak" onclick="eksekusiApprovalSpp('${item.id}', 'Gagal')"><i class="fa fa-times"></i></button>
-            <button class="btn btn-xs btn-secondary py-0 px-1 text-xs" style="font-size:10px;" onclick='cetakKwitansiSatuan(${JSON.stringify(item)})'><i class="fa fa-print"></i> Kwitansi</button>
+            <button class="btn btn-xs btn-danger py-0 px-1" title="Tolak" onclick="eksekusiApprovalSpp('${item.id}', 'Gagal')"><i class="fa fa-times"></i></button>
           </td>`;
       } else {
-        kolomAksiAdmin = `
-          <td class="text-center text-nowrap">
-            <button class="btn btn-xs btn-primary py-0 px-1 text-xs shadow-sm" style="font-size:10px;" onclick='cetakKwitansiSatuan(${JSON.stringify(item)})'>
-              <i class="fa fa-receipt me-1"></i> Kwitansi
-            </button>
-          </td>`;
+        kolomAksiAdmin = `<td class="text-center text-muted small">-</td>`;
       }
+
+      kolomKwitansiTerpisah = `
+        <td class="text-center">
+          <button class="btn btn-xs btn-primary py-0 px-2 shadow-sm text-nowrap" style="font-size:11px;" onclick='cetakKwitansiSatuan(${JSON.stringify(item)})'>
+            <i class="fa fa-receipt me-1"></i> Kwitansi
+          </button>
+        </td>`;
+
     } else {
-      kolomAksiAdmin = `
+      kolomAksiAdmin = `<td class="text-center text-muted small">-</td>`;
+      
+      kolomKwitansiTerpisah = `
         <td class="text-center">
           ${item.status === 'Berhasil' ? 
-            `<button class="btn btn-xs btn-primary py-0 px-1 text-xs" style="font-size:10px;" onclick='cetakKwitansiSatuan(${JSON.stringify(item)})'><i class="fa fa-print"></i> Cetak</button>` 
+            `<button class="btn btn-xs btn-primary py-0 px-2 text-nowrap" style="font-size:11px;" onclick='cetakKwitansiSatuan(${JSON.stringify(item)})'><i class="fa fa-print me-1"></i> Cetak</button>` 
             : `<span class="text-muted small">-</span>`
           }
         </td>`;
     }
 
-    let metodeBayar = item.metode || item.jenis_pembayaran || "-";
-
     html += `
       <tr>
-        <td><small>${item.tanggal || '-'}</small></td>
+        <td><small>${tanggalFix}</small></td>
         <td class="fw-bold">${item.nis || '-'}</td>
         <td><strong>${item.nama || '-'}</strong></td>
         <td><small>${item.unit || '-'} / ${item.kelas || '-'}</small></td>
@@ -1059,12 +1075,13 @@ function renderTabelSpp(arrData, role) {
         <td class="text-center">${linkBukti}</td>
         <td class="text-center">${badge}</td>
         ${kolomAksiAdmin}
+        ${kolomKwitansiTerpisah}
       </tr>
     `;
   });
+  
   tbody.innerHTML = html;
 }
-
 async function eksekusiApprovalSpp(idBayar, statusTarget) {
   if(!confirm(`Apakah Anda yakin ingin menandai transaksi ini sebagai ${statusTarget}?`)) return;
   try {
