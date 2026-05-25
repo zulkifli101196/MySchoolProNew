@@ -1030,10 +1030,13 @@ function renderTabelSpp(arrData, role) {
 
     let metodeBayar = item.metode || item.jenis_pembayaran || "-";
 
+    let encodedData = encodeURIComponent(JSON.stringify(item));
+
     let kolomAksiAdmin = "";
     let kolomKwitansiTerpisah = "";
 
     if (role === "admin") {
+      // Kolom Aksi Verifikasi
       if (item.status === "Pending" || item.status === "Menunggu Persetujuan") {
         kolomAksiAdmin = `
           <td class="text-center text-nowrap">
@@ -1046,18 +1049,19 @@ function renderTabelSpp(arrData, role) {
 
       kolomKwitansiTerpisah = `
         <td class="text-center">
-          <button class="btn btn-xs btn-primary py-0 px-2 shadow-sm text-nowrap" style="font-size:11px;" onclick='cetakKwitansiSatuan(${JSON.stringify(item)})'>
+          <button class="btn btn-xs btn-primary py-0 px-2 shadow-sm text-nowrap" style="font-size:11px;" onclick="jembatanCetakKwitansi('${encodedData}')">
             <i class="fa fa-receipt me-1"></i> Kwitansi
           </button>
         </td>`;
 
     } else {
+
       kolomAksiAdmin = `<td class="text-center text-muted small">-</td>`;
       
       kolomKwitansiTerpisah = `
         <td class="text-center">
           ${item.status === 'Berhasil' ? 
-            `<button class="btn btn-xs btn-primary py-0 px-2 text-nowrap" style="font-size:11px;" onclick='cetakKwitansiSatuan(${JSON.stringify(item)})'><i class="fa fa-print me-1"></i> Cetak</button>` 
+            `<button class="btn btn-xs btn-primary py-0 px-2 text-nowrap" style="font-size:11px;" onclick="jembatanCetakKwitansi('${encodedData}')"><i class="fa fa-print me-1"></i> Cetak</button>` 
             : `<span class="text-muted small">-</span>`
           }
         </td>`;
@@ -1082,6 +1086,17 @@ function renderTabelSpp(arrData, role) {
   
   tbody.innerHTML = html;
 }
+
+function jembatanCetakKwitansi(encodedStr) {
+  try {
+    const decodedObj = JSON.parse(decodeURIComponent(encodedStr));
+    cetakKwitansiSatuan(decodedObj);
+  } catch (error) {
+    console.error("Gagal membaca objek kwitansi:", error);
+    alert("Terjadi kesalahan sistem saat memproses data baris ini.");
+  }
+}
+	
 async function eksekusiApprovalSpp(idBayar, statusTarget) {
   if(!confirm(`Apakah Anda yakin ingin menandai transaksi ini sebagai ${statusTarget}?`)) return;
   try {
