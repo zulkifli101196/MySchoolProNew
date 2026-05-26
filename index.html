@@ -632,32 +632,21 @@ async function muatProfilSekolah() {
   const logoImg = document.getElementById("login-logo");
   const loader = document.getElementById("logo-loader");
 
-  // PENGAMAN: Jika dalam 4 detik logo tidak merespon, tampilkan ikon default
   const batasanWaktu = setTimeout(() => {
     console.warn("Waktu pemuatan logo habis. Menggunakan ikon default.");
     tampilkanIconDefault();
   }, 4000);
 
   try {
-    // Menggunakan fungsi callGAS bawaan Anda
     const res = await callGAS("getProfilSekolah");
-    
-    // Matikan pengaman waktu karena server berhasil merespon
     clearTimeout(batasanWaktu);
 
     if (res && res.logo) {
-      // Masukkan data Base64 ke tag gambar
       logoImg.src = res.logo;
       
-      // Sembunyikan spinner dan tampilkan gambar
-      if (loader) loader.style.display = "none";
-      if (logoImg) logoImg.style.display = "block";
+      if (loader) loader.classList.add("d-none");
+      if (logoImg) logoImg.classList.remove("d-none");
       
-      // Ubah judul "MySchool PRO" jadi nama sekolah Anda (KBIT AL-ISHLAH)
-      if (res.namaSekolah) {
-        const loginTitle = document.getElementById("login-title");
-        if (loginTitle) loginTitle.innerText = res.namaSekolah;
-      }
     } else {
       tampilkanIconDefault();
     }
@@ -668,21 +657,18 @@ async function muatProfilSekolah() {
   }
 }
 
-// Fungsi cadangan
 function tampilkanIconDefault() {
   const logoImg = document.getElementById("login-logo");
   const loader = document.getElementById("logo-loader");
   
-  if (loader) loader.style.display = "none";
-  if (logoImg && logoImg.style.display !== "block") {
-    logoImg.style.display = "none";
+  if (loader) loader.classList.add("d-none");
+  if (logoImg && logoImg.classList.contains("d-none")) {
     if (!document.getElementById("default-school-icon")) {
-      loader.insertAdjacentHTML('beforebegin', '<div id="default-school-icon" class="text-primary mb-3"><i class="fa fa-school fa-4x"></i></div>');
+      loader.insertAdjacentHTML('beforebegin', '<div id="default-school-icon" class="text-primary"><i class="fa fa-school fa-4x"></i></div>');
     }
   }
 }
 
-// Jalankan saat halaman siap
 window.addEventListener("DOMContentLoaded", () => {
   muatProfilSekolah();
 });
