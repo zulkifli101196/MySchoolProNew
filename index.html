@@ -631,7 +631,6 @@
 
 async function muatProfilSekolah() {
   const logoImg = document.getElementById("login-logo");
-  const loader = document.getElementById("logo-loader");
 
   try {
     const res = await callGAS("getProfilSekolah");
@@ -639,16 +638,13 @@ async function muatProfilSekolah() {
     if (res && res.logo) {
       logoImg.src = res.logo;
       
-      if (loader) loader.classList.add("d-none");
-      if (logoImg) logoImg.classList.remove("d-none");
-    } else {
-      if (loader) loader.classList.add("d-none");
+      if (logoImg) logoImg.style.display = "block";
     }
   } catch (err) {
     console.error("Gagal memuat logo sekolah:", err);
-    if (loader) loader.classList.add("d-none");
   }
 }
+
 window.addEventListener("DOMContentLoaded", () => {
   muatProfilSekolah();
 });
