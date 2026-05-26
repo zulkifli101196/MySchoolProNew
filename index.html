@@ -631,17 +631,24 @@
 
 async function muatProfilSekolah() {
   const logoImg = document.getElementById("login-logo");
+  const cachedLogo = localStorage.getItem("myschool_logo_cache");
+  if (cachedLogo) {
+    logoImg.src = cachedLogo;
+    logoImg.style.display = "block";
+  }
 
   try {
     const res = await callGAS("getProfilSekolah");
 
     if (res && res.logo) {
-      logoImg.src = res.logo;
-      
-      if (logoImg) logoImg.style.display = "block";
+      if (cachedLogo !== res.logo) {
+        logoImg.src = res.logo;
+        logoImg.style.display = "block";
+        localStorage.setItem("myschool_logo_cache", res.logo);
+      }
     }
   } catch (err) {
-    console.error("Gagal memuat logo sekolah:", err);
+    console.error("Gagal memperbarui profil sekolah dari server:", err);
   }
 }
 
