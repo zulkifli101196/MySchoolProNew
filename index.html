@@ -642,10 +642,17 @@
 
 async function muatProfilSekolah() {
   const logoImg = document.getElementById("login-logo");
+  const sidebarLogoImg = document.getElementById("sidebar-logo");
   const cachedLogo = localStorage.getItem("myschool_logo_cache");
   if (cachedLogo) {
-    logoImg.src = cachedLogo;
-    logoImg.style.display = "block";
+    if (logoImg) {
+      logoImg.src = cachedLogo;
+      logoImg.style.display = "block";
+    }
+    if (sidebarLogoImg) {
+      sidebarLogoImg.src = cachedLogo;
+      sidebarLogoImg.style.display = "block";
+    }
   }
 
   try {
@@ -653,8 +660,15 @@ async function muatProfilSekolah() {
 
     if (res && res.logo) {
       if (cachedLogo !== res.logo) {
-        logoImg.src = res.logo;
-        logoImg.style.display = "block";
+        if (logoImg) {
+          logoImg.src = res.logo;
+          logoImg.style.display = "block";
+        }
+        if (sidebarLogoImg) {
+          sidebarLogoImg.src = res.logo;
+          sidebarLogoImg.style.display = "block";
+        }
+        
         localStorage.setItem("myschool_logo_cache", res.logo);
       }
     }
@@ -662,10 +676,6 @@ async function muatProfilSekolah() {
     console.error("Gagal memperbarui profil sekolah dari server:", err);
   }
 }
-
-window.addEventListener("DOMContentLoaded", () => {
-  muatProfilSekolah();
-});
 	
   async function loadModels() {
     const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
