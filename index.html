@@ -602,7 +602,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyS3SHWdqqQseCvo-IgU2VEWnlKJbxTL_J65NvjFeImkscRxPC9YRfCYuwlQz4K4SqBBg/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyOqoM2155eGXhyfQXhqD5g-crAkOy1W0350Rl0eigcncpc2DOsluSjalIG0YzcJS7Dpg/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -629,36 +629,43 @@
   };
 
 function muatProfilSekolah() {
+  const logoImg = document.getElementById("login-logo");
+  const loader = document.getElementById("logo-loader");
+
   fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({ action: "getProfilSekolah", payload: {} })
   })
   .then(res => res.json())
   .then(res => {
-    const logoImg = document.getElementById("login-logo");
-    const loader = document.getElementById("logo-loader");
-    
     if (res && res.logo) {
       logoImg.src = res.logo;
       
-      loader.style.display = "none";
-      logoImg.style.style.display = "block";
+      if (loader) loader.style.display = "none";
+      if (logoImg) logoImg.style.display = "block";
       
       if (res.namaSekolah) {
-        document.getElementById("login-title").innerText = res.namaSekolah;
+        const loginTitle = document.getElementById("login-title");
+        if (loginTitle) loginTitle.innerText = res.namaSekolah;
       }
     } else {
-      loader.style.display = "none";
-      logoImg.style.display = "none";
-      loader.insertAdjacentHTML('beforebegin', '<div class="text-primary mb-3"><i class="fa fa-school fa-4x"></i></div>');
+      tampilkanIconDefault();
     }
   })
   .catch(err => {
     console.error("Gagal memuat logo sekolah:", err);
-    const loader = document.getElementById("logo-loader");
-    loader.style.display = "none";
-    loader.insertAdjacentHTML('beforebegin', '<div class="text-primary mb-3"><i class="fa fa-school fa-4x"></i></div>');
+    tampilkanIconDefault();
   });
+}
+
+function tampilkanIconDefault() {
+  const logoImg = document.getElementById("login-logo");
+  const loader = document.getElementById("logo-loader");
+  if (loader) loader.style.display = "none";
+  if (logoImg) {
+    logoImg.style.display = "none";
+    loader.insertAdjacentHTML('beforebegin', '<div class="text-primary mb-3"><i class="fa fa-school fa-4x"></i></div>');
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
