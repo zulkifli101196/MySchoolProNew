@@ -95,7 +95,18 @@
 <div id="pg-app" class="d-none">
   <nav id="sidebar">
     <i class="fa fa-times btn-close-sidebar" onclick="toggleSidebar()"></i>
-    <div class="mb-5 px-2"><h4 class="fw-800 text-white mb-0">MySchool PRO</h4><span class="badge bg-primary" style="font-size: 10px;">Edition 2026</span></div>
+
+	  <div class="mb-5 px-2 d-flex align-items-center gap-2">
+      <div style="width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; flex-shrink: 0;">
+        <img id="sidebar-logo" src="" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain; width: auto; height: auto; display: none;">
+      </div>
+      
+      <div>
+        <h4 class="fw-800 text-white mb-0" style="font-size: 1.1rem; letter-spacing: -0.5px;">MySchool PRO</h4>
+        <span class="badge bg-primary" style="font-size: 9px; padding: 2px 5px;">Portal Sekolah Terintegrasi</span>
+      </div>
+    </div>
+
     <button class="nav-item-custom active" onclick="nav('sc-home', this)"><i class="fa fa-chart-line me-2"></i> Dashboard</button>
     <button id="menu-cuti-user" class="nav-item-custom d-none" onclick="nav('sc-cuti', this)"><i class="fa fa-calendar-plus me-2"></i> Cuti</button>
     <button class="nav-item-custom" onclick="nav('sc-absen', this)"><i class="fa fa-fingerprint me-2"></i> Presensi</button>
