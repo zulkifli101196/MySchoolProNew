@@ -628,80 +628,47 @@
     loadModels();
   };
 
-function muatProfilSekolah() {
+async function muatProfilSekolah() {
   const logoImg = document.getElementById("login-logo");
   const loader = document.getElementById("logo-loader");
 
-  // ====================================================================
-  // DETEKSI OTOMATIS VARIABEL URL WEB APP ANDA
-  // Kode ini akan otomatis mendeteksi apakah Anda menggunakan nama API_URL atau SCRIPT_URL
-  // ====================================================================
-  let urlTarget = null;
-  if (typeof API_URL !== 'undefined') {
-    urlTarget = API_URL;
-  } else if (typeof SCRIPT_URL !== 'undefined') {
-    urlTarget = SCRIPT_URL;
-  } else if (typeof url !== 'undefined') {
-    urlTarget = url; // Cadangan jika variabel Anda hanya bernama 'url'
-  }
-
-  // PENGAMAN UTAMA (TIMEOUT 4 DETIK):
-  // Jika server Google lambat, kuota habis, atau script crash, 
-  // spinner AKAN DIMATIKAN PAKSA dalam 4 detik dan diganti ikon default.
+  // PENGAMAN: Jika dalam 4 detik logo tidak merespon, tampilkan ikon default
   const batasanWaktu = setTimeout(() => {
-    console.warn("Waktu pemuatan logo habis (Timeout). Menggunakan ikon default.");
+    console.warn("Waktu pemuatan logo habis. Menggunakan ikon default.");
     tampilkanIconDefault();
   }, 4000);
 
-  // Jika variabel URL sama sekali tidak ditemukan di index.html Anda
-  if (!urlTarget) {
-    console.error("Variabel URL Web App tidak ditemukan! Pastikan nama variabel URL Anda sesuai.");
-    clearTimeout(batasanWaktu);
-    tampilkanIconDefault();
-    return;
-  }
-
   try {
-    fetch(urlTarget, {
-      method: "POST",
-      body: JSON.stringify({ action: "getProfilSekolah", payload: {} })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("Koneksi server bermasalah");
-      return res.json();
-    })
-    .then(res => {
-      clearTimeout(batasanWaktu); // Batalkan pengaman jika server merespon dengan cepat
+    // Menggunakan fungsi callGAS bawaan Anda
+    const res = await callGAS("getProfilSekolah");
+    
+    // Matikan pengaman waktu karena server berhasil merespon
+    clearTimeout(batasanWaktu);
 
-      if (res && res.logo) {
-        // Berikan data Base64 ke tag gambar
-        logoImg.src = res.logo;
-        
-        // Matikan spinner dan tampilkan logo sekolah Anda
-        if (loader) loader.style.display = "none";
-        if (logoImg) logoImg.style.display = "block";
-        
-        // Mengubah judul login secara dinamis jika nama sekolah ada di database
-        if (res.namaSekolah && document.getElementById("login-title")) {
-          document.getElementById("login-title").innerText = res.namaSekolah;
-        }
-      } else {
-        tampilkanIconDefault();
+    if (res && res.logo) {
+      // Masukkan data Base64 ke tag gambar
+      logoImg.src = res.logo;
+      
+      // Sembunyikan spinner dan tampilkan gambar
+      if (loader) loader.style.display = "none";
+      if (logoImg) logoImg.style.display = "block";
+      
+      // Ubah judul "MySchool PRO" jadi nama sekolah Anda (KBIT AL-ISHLAH)
+      if (res.namaSekolah) {
+        const loginTitle = document.getElementById("login-title");
+        if (loginTitle) loginTitle.innerText = res.namaSekolah;
       }
-    })
-    .catch(err => {
-      console.error("Gagal memuat dari Google Script:", err);
-      clearTimeout(batasanWaktu);
+    } else {
       tampilkanIconDefault();
-    });
-  } catch (e) {
-    console.error("Terjadi kesalahan sistem JavaScript:", e);
+    }
+  } catch (err) {
+    console.error("Gagal memuat profil sekolah:", err);
     clearTimeout(batasanWaktu);
     tampilkanIconDefault();
   }
 }
 
-// Fungsi cadangan untuk mematikan loader dan menampilkan ikon bangunan sekolah
+// Fungsi cadangan
 function tampilkanIconDefault() {
   const logoImg = document.getElementById("login-logo");
   const loader = document.getElementById("logo-loader");
@@ -709,7 +676,6 @@ function tampilkanIconDefault() {
   if (loader) loader.style.display = "none";
   if (logoImg && logoImg.style.display !== "block") {
     logoImg.style.display = "none";
-    // Mencegah duplikasi ikon jika fungsi ini terpanggil dua kali
     if (!document.getElementById("default-school-icon")) {
       loader.insertAdjacentHTML('beforebegin', '<div id="default-school-icon" class="text-primary mb-3"><i class="fa fa-school fa-4x"></i></div>');
     }
