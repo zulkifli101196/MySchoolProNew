@@ -658,19 +658,6 @@ async function muatProfilSekolah() {
     tampilkanIconDefault();
   }
 }
-
-function tampilkanIconDefault() {
-  const logoImg = document.getElementById("login-logo");
-  const loader = document.getElementById("logo-loader");
-  
-  if (loader) loader.classList.add("d-none");
-  if (logoImg && logoImg.classList.contains("d-none")) {
-    if (!document.getElementById("default-school-icon")) {
-      loader.insertAdjacentHTML('beforebegin', '<div id="default-school-icon" class="text-primary"><i class="fa fa-school fa-4x"></i></div>');
-    }
-  }
-}
-
 window.addEventListener("DOMContentLoaded", () => {
   muatProfilSekolah();
 });
