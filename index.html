@@ -633,7 +633,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbypJE7W2bbMrtb2LY3Kp0NSJCt5Ys-HiXtKOr4iWzBS-fn5ZxVo_MBeFZuTGSyF-YGHsg/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyneUZ8hyaVvtzCy-XBPrP2N-tUcFC50TWeQgyS7ohlf47kFlXo5nID2AaBJiJ-l19Bhw/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -872,8 +872,8 @@ async function inisialisasiMenuSPP() {
   const rowBukti = document.getElementById("row-bukti-transfer");
 
   if (role === 'admin') {
-    document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-calculator me-2"></i>Form Pembayaran SPP`;
-    document.getElementById("text-btn-spp").innerText = "Simpan Transaksi";
+    document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-calculator me-2"></i>Loket Pembayaran SPP (Admin)`;
+    document.getElementById("text-btn-spp").innerText = "Simpan Transaksi (Lunas)";
     
     if (panelAdmin) panelAdmin.classList.remove("d-none");
     if (thAksiAdmin) thAksiAdmin.classList.remove("d-none");
@@ -893,8 +893,8 @@ async function inisialisasiMenuSPP() {
     loadHistoriSPP(""); 
   } 
   else if (role === 'siswa') {
-    document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-wallet me-2"></i>Form Pembayaran SPP`;
-    document.getElementById("text-btn-spp").innerText = "Simpan Transaksi";
+    document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-wallet me-2"></i>Konfirmasi Pembayaran SPP Mandiri`;
+    document.getElementById("text-btn-spp").innerText = "Kirim Bukti Pembayaran (Pending)";
     
     if (panelAdmin) panelAdmin.classList.add("d-none");
     if (thAksiAdmin) thAksiAdmin.classList.add("d-none");
@@ -924,7 +924,7 @@ async function inisialisasiMenuSPP() {
     loadHistoriSPP(userSession.nis || userSession.username); 
   }
 }
-
+	
 async function muatDropdownReferensiDinamis() {
   try {
     const res = await callGAS("getRefData", {});
@@ -1215,7 +1215,7 @@ function saringTabelLokal() {
 
   renderTabelSpp(hasilSaring, role);
 }
-	
+
 function clearFormSiswa() {
   if(document.getElementById("spp-nama")) document.getElementById("spp-nama").value = "";
   if(document.getElementById("spp-unit")) document.getElementById("spp-unit").value = "";
@@ -1235,9 +1235,10 @@ function toggleUploadBukti() {
     rowBukti.classList.remove("d-none");
   } else {
     rowBukti.classList.add("d-none");
-    inputBukti.value = ""; // Reset file
+    inputBukti.value = "";
   }
 }
+
 function muatUlangHistori() {
   const role = userSession.role.toLowerCase();
   if (role === "admin") {
