@@ -633,7 +633,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyneUZ8hyaVvtzCy-XBPrP2N-tUcFC50TWeQgyS7ohlf47kFlXo5nID2AaBJiJ-l19Bhw/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwtmEXhaPjZdIWh6vIcW_bkKHZcZoxMfYXYo2LmsWu1RebnYkdh6qPsJ8gVMaEOkx3XUQ/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -907,16 +907,16 @@ async function inisialisasiMenuSPP() {
     document.getElementById("spp-nama").value = userSession.nama || "-";
     
     const unitSelect = document.getElementById("spp-unit");
-    if(unitSelect && unitSelect.querySelector(`option[value="${userSession.unit}"]`)) {
+    if(unitSelect.querySelector(`option[value="${userSession.unit}"]`)) {
        unitSelect.value = userSession.unit;
     }
     const kelasSelect = document.getElementById("spp-kelas");
-    if(kelasSelect && kelasSelect.querySelector(`option[value="${userSession.kelas}"]`)) {
+    if(kelasSelect.querySelector(`option[value="${userSession.kelas}"]`)) {
        kelasSelect.value = userSession.kelas;
     }
 
-    if(unitSelect) unitSelect.disabled = true;
-    if(kelasSelect) kelasSelect.disabled = true;
+    unitSelect.disabled = true;
+    kelasSelect.disabled = true;
     
     if (rowBukti) rowBukti.classList.remove("d-none");
     document.getElementById("spp-file").required = true;
@@ -924,7 +924,7 @@ async function inisialisasiMenuSPP() {
     loadHistoriSPP(userSession.nis || userSession.username); 
   }
 }
-	
+
 async function muatDropdownReferensiDinamis() {
   try {
     const res = await callGAS("getRefData", {});
@@ -1188,13 +1188,8 @@ async function eksekusiApprovalSpp(idBayar, statusTarget) {
 }
 
 function saringTabelLokal() {
-  const filterUnitEl = document.getElementById("filter-spp-unit");
-  const filterKelasEl = document.getElementById("filter-spp-kelas");
-  const cariAdminEl = document.getElementById("cari-spp-admin");
-  
-  const fUnit = filterUnitEl ? filterUnitEl.value.toLowerCase() : "";
-  const fKelas = filterKelasEl ? filterKelasEl.value.toLowerCase() : "";
-  const kWord = cariAdminEl ? cariAdminEl.value.toLowerCase().trim() : "";
+  const fUnit = document.getElementById("filter-spp-unit").value.toLowerCase();
+  const fKelas = document.getElementById("filter-spp-kelas").value.toLowerCase();
   const role = userSession.role.toLowerCase();
 
   let hasilSaring = cacheHistoriSpp;
@@ -1204,13 +1199,6 @@ function saringTabelLokal() {
   }
   if (fKelas) {
     hasilSaring = hasilSaring.filter(x => x.kelas && x.kelas.toLowerCase() === fKelas);
-  }
-  if (kWord) {
-    hasilSaring = hasilSaring.filter(x => 
-      (x.nama && x.nama.toLowerCase().includes(kWord)) || 
-      (x.nis && x.nis.toString().includes(kWord)) ||
-      (x.bulan && x.bulan.toLowerCase().includes(kWord))
-    );
   }
 
   renderTabelSpp(hasilSaring, role);
@@ -1235,7 +1223,7 @@ function toggleUploadBukti() {
     rowBukti.classList.remove("d-none");
   } else {
     rowBukti.classList.add("d-none");
-    inputBukti.value = "";
+    inputBukti.value = ""; // Reset file
   }
 }
 
