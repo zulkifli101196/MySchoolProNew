@@ -435,7 +435,7 @@
           </select>
         </div>
         <div class="col-md-2">
-          <button class="btn btn-sm btn-success w-100 fw-bold shadow-sm" onclick="submitPresensiSiswaMasal()">
+          <button class="btn btn-sm btn-primary w-100 fw-bold shadow-sm" onclick="submitPresensiSiswaMasal()">
             <i class="fa fa-save me-1"></i> Simpan Presensi
           </button>
         </div>
@@ -492,7 +492,7 @@
                               <option value="">-- Pilih Kelas --</option>
                           </select>
                       </div>  
-                      <div class="col-md-5">
+                      <div class="col-md-3">
                           <label class="form-label fw-bold">Bulan</label>
                           <select id="spp-bulan" class="form-select" required>
                               <option value="">-- Pilih Bulan --</option>
@@ -510,7 +510,7 @@
                               <option value="Desember">Desember</option>
                           </select>
                       </div>
-					  <div class="col-md-5">
+					  <div class="col-md-3">
                           <label class="form-label fw-bold">Tahun</label>
                           <select id="spp-tahun" class="form-select" required>
                               <option value="">-- Pilih Bulan --</option>
@@ -528,11 +528,11 @@
                               <option value="2037">2036</option>
                           </select>
                       </div>
-                      <div class="col-md-5">
+                      <div class="col-md-3">
                           <label class="form-label fw-bold">Nominal Pembayaran (Rp)</label>
                           <input type="number" id="spp-nominal" class="form-control" placeholder="Cth: 250000" required>
                       </div>
-                      <div class="col-md-5">
+                      <div class="col-md-3">
                           <label class="form-label fw-bold">Metode / Jenis Pembayaran</label>
                           <select id="spp-metode" class="form-select" required onchange="toggleUploadBukti()">
                               <option value="Cash / Tunai">Cash / Tunai</option>
@@ -541,12 +541,12 @@
                           </select>
                       </div>
                       
-                      <div class="col-md-12 d-none" id="row-bukti-transfer">
+                      <div class="col-md-6 d-none" id="row-bukti-transfer">
                           <label class="form-label fw-bold text-danger">Upload File Bukti Pembayaran *</label>
                           <input type="file" id="spp-file" class="form-control" accept="image/*">
                       </div>
                       
-                      <div class="col-md-12 text-end mt-3">
+                      <div class="col-md-6 text-end mt-3">
                           <button type="submit" id="btn-simpan-spp" class="btn btn-success px-4">
                               <span id="spp-loading" class="spinner-border spinner-border-sm d-none me-2"></span>
                               <span id="text-btn-spp">Simpan Pembayaran</span>
