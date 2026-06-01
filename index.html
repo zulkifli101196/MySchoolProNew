@@ -510,24 +510,6 @@
                               <option value="Desember">Desember</option>
                           </select>
                       </div>
-					  <div class="col-md-4">
-                          <label class="form-label fw-bold">Tahun Tagihan</label>
-                          <select id="spp-tahun" class="form-select" required>
-                              <option value="">-- Pilih Tahun --</option>
-                              <option value="2026">2026</option>
-                              <option value="2027">2027</option>
-                              <option value="2028">2028</option>
-                              <option value="2029">2029</option>
-                              <option value="2030">2030</option>
-                              <option value="2031">2031</option>
-                              <option value="2032">2032</option>
-                              <option value="2033">2033</option>
-                              <option value="2034">2034</option>
-                              <option value="2035">2035</option>
-                              <option value="2036">2036</option>
-                              <option value="2037">2037</option>
-                          </select>
-                      </div>
                       <div class="col-md-4">
                           <label class="form-label fw-bold">Nominal Pembayaran (Rp)</label>
                           <input type="number" id="spp-nominal" class="form-control" placeholder="Cth: 250000" required>
@@ -602,7 +584,6 @@
                               <th>Nama Siswa</th>
                               <th>Unit / Kelas</th>
                               <th>Bulan</th>
-							  <th>Tahun</th>
                               <th>Nominal</th>
                               <th>Metode</th>
                               <th>Bukti</th>
@@ -633,7 +614,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxXTTvN1HvosGYXt9rIi3s1frKK2RQEkfm2DL83UAlkL7V69tlAduPQeYo3l28qVCaF3Q/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwU0BFtwleAPI9xzoGF_2Nb02QP51esT86Dvr6pFrgiYnDqYCAxiwrrbBYOYxQDp-uOyg/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -844,7 +825,7 @@ function inisialisasiMenuSPP() {
     
     if (inputNis) {
       inputNis.readOnly = false;
-      inputNis.placeholder = "Ketik NIS lalu tekan Enter";
+      inputNis.placeholder = "Ketik NIS & tekan Tab/Enter";
     }
     
     loadHistoriSPP("");
@@ -861,85 +842,95 @@ function inisialisasiMenuSPP() {
   }
 }
 	
-// Variable global penampung cache data riwayat SPP lokal
 let cacheHistoriSpp = [];
 
-// 1. Fungsi Inisialisasi Menu SPP (Otomatis membedakan UI Admin & Siswa)
 async function inisialisasiMenuSPP() {
   if (!userSession || !userSession.role) return;
+
   const role = userSession.role.toLowerCase();
-  
-  // Bersihkan form
+  await muatDropdownReferensiDinamis();
+
   const formSpp = document.getElementById("form-bayar-spp");
   if (formSpp) formSpp.reset();
   clearFormSiswa();
-  
-  await muatDropdownReferensiDinamis();
-  
+
   const inputNis = document.getElementById("spp-nis");
-  const panelAdminFilter = document.getElementById("filter-admin-spp");
+  const panelAdmin = document.getElementById("filter-admin-spp");
+  const thAksiAdmin = document.getElementById("th-aksi-admin");
   const rowBukti = document.getElementById("row-bukti-transfer");
-  
+
   if (role === 'admin') {
     document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-calculator me-2"></i>Loket Pembayaran SPP (Admin)`;
     document.getElementById("text-btn-spp").innerText = "Simpan Transaksi (Lunas)";
     
-    if (panelAdminFilter) panelAdminFilter.classList.remove("d-none");
+    if (panelAdmin) panelAdmin.classList.remove("d-none");
+    if (thAksiAdmin) thAksiAdmin.classList.remove("d-none");
+    
     if (inputNis) {
       inputNis.readOnly = false;
       inputNis.disabled = false;
-      inputNis.placeholder = "Ketik NIS lalu tekan Tab/Enter...";
+      inputNis.placeholder = "Ketik NIS lalu tekan Enter";
+      inputNis.value = ""; 
     }
+    
     document.getElementById("spp-unit").disabled = false;
     document.getElementById("spp-kelas").disabled = false;
     if (rowBukti) rowBukti.classList.add("d-none");
     document.getElementById("spp-file").required = false;
-    
-    loadHistoriSPP("");
-  } else if (role === 'siswa') {
+
+    loadHistoriSPP(""); 
+  } 
+  else if (role === 'siswa') {
     document.getElementById("title-panel-spp").innerHTML = `<i class="fas fa-wallet me-2"></i>Konfirmasi Pembayaran SPP Mandiri`;
     document.getElementById("text-btn-spp").innerText = "Kirim Bukti Pembayaran (Pending)";
     
-    if (panelAdminFilter) panelAdminFilter.classList.add("d-none");
-    
-    // Tarik NIS murni dari session login siswa
-    let nisSiswa = userSession.nis || userSession.username;
+    if (panelAdmin) panelAdmin.classList.add("d-none");
+    if (thAksiAdmin) thAksiAdmin.classList.add("d-none");
+
+    // Gunakan data dari userSession yang sudah diperbarui
     if (inputNis) {
-      inputNis.value = nisSiswa;
-      inputNis.readOnly = true;
+      inputNis.value = userSession.nis || "-"; 
+      inputNis.readOnly = true; 
       inputNis.style.cursor = 'not-allowed';
     }
+    document.getElementById("spp-nama").value = userSession.nama || "-";
     
-    // Otomatis cari detail nama, unit, kelas siswa dari DB
-    if (nisSiswa) {
-      cariSiswaOtomatisByNis(nisSiswa);
+    const unitSelect = document.getElementById("spp-unit");
+    if(unitSelect.querySelector(`option[value="${userSession.unit}"]`)) {
+       unitSelect.value = userSession.unit;
     }
+    const kelasSelect = document.getElementById("spp-kelas");
+    if(kelasSelect.querySelector(`option[value="${userSession.kelas}"]`)) {
+       kelasSelect.value = userSession.kelas;
+    }
+
+    unitSelect.disabled = true;
+    kelasSelect.disabled = true;
     
     if (rowBukti) rowBukti.classList.remove("d-none");
     document.getElementById("spp-file").required = true;
-    
-    loadHistoriSPP(nisSiswa);
+
+    loadHistoriSPP(userSession.nis || userSession.username); 
   }
 }
 
-// 2. Muat referensi Unit dan Kelas secara dinamis ke Dropdown Form & Filter
 async function muatDropdownReferensiDinamis() {
   try {
     const res = await callGAS("getRefData", {});
     if (res) {
       const listUnit = res["Unit"] || res["unit"] || [];
       const listKelas = res["Kelas"] || res["kelas"] || [];
-      
+
       const optUnit = ['spp-unit', 'filter-spp-unit'];
       const optKelas = ['spp-kelas', 'filter-spp-kelas'];
-      
+
       optUnit.forEach(id => {
         const el = document.getElementById(id);
         if(!el) return;
         el.innerHTML = id.startsWith('filter') ? '<option value="">-- Semua Unit --</option>' : '<option value="">-- Pilih Unit --</option>';
         listUnit.forEach(v => el.innerHTML += `<option value="${v}">${v}</option>`);
       });
-      
+
       optKelas.forEach(id => {
         const el = document.getElementById(id);
         if(!el) return;
@@ -947,149 +938,30 @@ async function muatDropdownReferensiDinamis() {
         listKelas.forEach(v => el.innerHTML += `<option value="${v}">${v}</option>`);
       });
     }
-  } catch (e) {
-    console.error("Gagal muat referensi dropdown SPP: ", e);
-  }
+  } catch (e) { console.error("Gagal menarik data_referensi:", e); }
 }
 
-// 3. Ambil data profil siswa otomatis saat Admin mengetik NIS
 async function cariSiswaOtomatis() {
-  const nisVal = document.getElementById("spp-nis").value.trim();
-  if (!nisVal) return;
-  cariSiswaOtomatisByNis(nisVal);
-}
+  const nisInput = document.getElementById("spp-nis").value.trim();
+  if (!nisInput || nisInput === "Memuat NIS...") return;
 
-async function cariSiswaOtomatisByNis(nis) {
+  document.getElementById("spp-nama").value = "Mencari profil...";
   try {
-    const res = await callGAS("getSiswaByNis", { nis: nis });
-    if (res && res.success) {
-      document.getElementById("spp-nama").value = res.data.nama;
-      document.getElementById("spp-unit").value = res.data.unit;
-      document.getElementById("spp-kelas").value = res.data.kelas;
-      
-      // Jika siswa login, kunci select unit & kelas agar tidak diubah-ubah
-      if(userSession.role.toLowerCase() === 'siswa') {
-        document.getElementById("spp-unit").disabled = true;
-        document.getElementById("spp-kelas").disabled = true;
-      }
+    const res = await callGAS("getSiswaByNis", { nis: nisInput });
+    if (res && res.success && res.data) {
+      document.getElementById("spp-nama").value = res.data.nama || "-";
+      document.getElementById("spp-unit").value = res.data.unit || "";
+      document.getElementById("spp-kelas").value = res.data.kelas || "";
     } else {
-      if(userSession.role.toLowerCase() === 'admin') {
-        alert(res.message || "Siswa dengan NIS tersebut tidak ditemukan!");
-        clearFormSiswa();
-      }
-    }
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-function clearFormSiswa() {
-  document.getElementById("spp-nama").value = "";
-  document.getElementById("spp-unit").value = "";
-  document.getElementById("spp-kelas").value = "";
-}
-
-// 4. Sembunyikan/Tampilkan input upload file bukti bayar berdasarkan metode pembayaran
-function toggleUploadBukti() {
-  const metode = document.getElementById("spp-metode").value;
-  const rowBukti = document.getElementById("row-bukti-transfer");
-  const fileInput = document.getElementById("spp-file");
-  const role = userSession.role.toLowerCase();
-  
-  if (metode === "Cash / Tunai") {
-    if (rowBukti) rowBukti.classList.add("d-none");
-    if (fileInput) fileInput.required = false;
-  } else {
-    // Jika transfer bank atau QRIS
-    if (role === 'siswa') {
-      if (rowBukti) rowBukti.classList.remove("d-none");
-      if (fileInput) fileInput.required = true;
-    } else {
-      // Admin mencatat cash maupun transfer tidak wajib melampirkan berkas fisik gambar secara default
-      if (rowBukti) rowBukti.classList.add("d-none");
-      if (fileInput) fileInput.required = false;
-    }
-  }
-}
-
-// 5. Penanganan Pengiriman Form (Submit Pembayaran SPP)
-async function handleBayarSPP(event) {
-  event.preventDefault();
-  
-  const role = userSession.role.toLowerCase();
-  const loadingStr = document.getElementById("spp-loading");
-  const btnText = document.getElementById("text-btn-spp");
-  const btnSubmit = document.getElementById("btn-simpan-spp");
-  
-  // Ambil value form
-  const nis = document.getElementById("spp-nis").value.trim();
-  const nama = document.getElementById("spp-nama").value.trim();
-  const unit = document.getElementById("spp-unit").value;
-  const kelas = document.getElementById("spp-kelas").value;
-  const bulan = document.getElementById("spp-bulan").value;
-  const tahun = document.getElementById("spp-tahun").value;
-  const nominal = document.getElementById("spp-nominal").value;
-  const metode = document.getElementById("spp-metode").value;
-  const fileInput = document.getElementById("spp-file");
-  
-  if(!nis || !nama || !unit || !kelas || !bulan || !tahun || !nominal) {
-    return alert("Mohon lengkapi seluruh kolom formulir!");
-  }
-  
-  // Set UI state loading
-  if(loadingStr) loadingStr.classList.remove("d-none");
-  if(btnText) btnText.innerText = "Memproses...";
-  if(btnSubmit) btnSubmit.disabled = true;
-  
-  let base64Data = "-";
-  
-  // Konversi file gambar ke Base64 jika ada berkas yang diunggah
-  if (fileInput && fileInput.files.length > 0) {
-    const file = fileInput.files[0];
-    base64Data = await konversiFileToBase64(file);
-  }
-  
-  const payload = {
-    nis: nis,
-    nama: nama,
-    unit: unit,
-    kelas: kelas,
-    bulan: bulan,
-    tahun: tahun,
-    nominal: nominal,
-    jenis_pembayaran: metode,
-    buktiBase64: base64Data,
-    status: (role === 'admin') ? "Berhasil" : "Pending"
-  };
-  
-  try {
-    const res = await callGAS("prosesBayarSPP", payload);
-    if (res && res.success) {
-      alert(`Sukses! Pembayaran SPP berhasil disimpan.\nID Transaksi: ${res.id}`);
-      
-      // Reset form
-      document.getElementById("form-bayar-spp").reset();
+      alert("Siswa tidak ditemukan!");
       clearFormSiswa();
-      
-      // Reload histori riwayat tabel
-      if (role === 'admin') {
-        inisialisasiMenuSPP();
-      } else {
-        inisialisasiMenuSPP();
-      }
-    } else {
-      alert("Gagal menyimpan data: " + (res.message || "Terjadi kesalahan backend"));
     }
-  } catch (error) {
-    alert("Terjadi kegagalan sistem sistem: " + error.message);
-  } finally {
-    if(loadingStr) loadingStr.classList.add("d-none");
-    if(btnSubmit) btnSubmit.disabled = false;
+  } catch (error) { 
+    clearFormSiswa(); 
   }
 }
 
-// Helper converter file pembantu FileReader
-function konversiFileToBase64(file) {
+function convertFileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -1098,101 +970,180 @@ function konversiFileToBase64(file) {
   });
 }
 
-// 6. Tarik Data Histori SPP dari Spreadsheet & Tampilkan di Tabel UI HTML
-async function loadHistoriSPP(nisOrNama) {
-  const tbody = document.getElementById("data-histori-spp");
-  if (!tbody) return;
-  
-  tbody.innerHTML = `<tr><td colspan="12" class="text-center text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Menarik data riwayat pembayaran...</td></tr>`;
-  
-  try {
-    let res;
-    if (userSession.role.toLowerCase() === 'admin') {
-      res = await callGAS("getAllSPPData", {});
-    } else {
-      res = await callGAS("getHistorySPP", nisOrNama);
-    }
-    
-    if (res && res.success) {
-      cacheHistoriSpp = res.data || [];
-      renderTabelSPPLokal(cacheHistoriSpp);
-    } else {
-      tbody.innerHTML = `<tr><td colspan="12" class="text-center text-danger">Gagal memuat histori: ${res.message}</td></tr>`;
-    }
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="12" class="text-center text-danger">Sistem Error: ${err.message}</td></tr>`;
-  }
-}
-
-function muatUlangHistori() {
+async function handleBayarSPP(event) {
+  event.preventDefault();
   const role = userSession.role.toLowerCase();
-  if (role === 'admin') {
-    loadHistoriSPP("");
-  } else {
-    loadHistoriSPP(userSession.nis || userSession.username);
+
+  const loadingSpinner = document.getElementById("spp-loading");
+  const btnSimpan = document.getElementById("btn-simpan-spp");
+  
+  if (loadingSpinner) loadingSpinner.classList.remove("d-none");
+  if (btnSimpan) btnSimpan.disabled = true;
+
+  let fileObj = { base64: "", name: "" };
+  const fileInput = document.getElementById("spp-file");
+  if (fileInput && fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    try {
+      const base64Str = await convertFileToBase64(file);
+      fileObj.base64 = base64Str;
+      fileObj.name = file.name;
+    } catch (err) {
+      alert("Gagal membaca file bukti pembayaran.");
+      if (loadingSpinner) loadingSpinner.classList.add("d-none");
+      if (btnSimpan) btnSimpan.disabled = false;
+      return;
+    }
+  }
+
+  let statusTransaksi = (role === "admin") ? "Berhasil" : "Pending";
+  
+  let nisValue = document.getElementById("spp-nis").value.trim();
+  if ((!nisValue || nisValue === "Memuat NIS...") && role === "siswa") {
+    nisValue = userSession.u || userSession.username || "";
+  }
+
+  const dataPayload = {
+    nis: nisValue,
+    nama: document.getElementById("spp-nama").value,
+    unit: document.getElementById("spp-unit").value,
+    kelas: document.getElementById("spp-kelas").value,
+    bulan: document.getElementById("spp-bulan").value,
+    nominal: document.getElementById("spp-nominal").value,
+    jenis_pembayaran: document.getElementById("spp-metode").value,
+    status: statusTransaksi,
+    buktiBase64: fileObj.base64,
+    buktiNamaFile: fileObj.name
+  };
+
+  if (role === "siswa") {
+    dataPayload.unit = userSession.unit;
+    dataPayload.kelas = userSession.kelas;
+  }
+
+  try {
+    const res = await callGAS("prosesBayarSPP", dataPayload);
+    if (res && res.success) {
+      alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "pembayaran berhasil terkirim! Silakan tunggu verifikasi admin.");
+      inisialisasiMenuSPP(); 
+    } else {
+      alert("Gagal menyimpan: " + (res.message || "Terjadi kesalahan backend."));
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Sistem gagal terhubung ke backend Google Sheets.");
+  } finally {
+    if (loadingSpinner) loadingSpinner.classList.add("d-none");
+    if (btnSimpan) btnSimpan.disabled = false;
   }
 }
 
-// 7. Menggambar baris-baris data transaksi SPP ke elemen tbody
-function renderTabelSPPLokal(dataList) {
+async function loadHistoriSPP(filterNis = "") {
   const tbody = document.getElementById("data-histori-spp");
   if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="10" class="text-center"><span class="spinner-border spinner-border-sm me-2"></span>Memuat tabel riwayat...</td></tr>`;
+
+  try {
+    const res = await callGAS("getHistorySPP", { nisOrNama: filterNis });
+    const role = userSession.role.toLowerCase();
+
+    if (res && res.success && res.data) {
+      cacheHistoriSpp = res.data;
+      renderTabelSpp(cacheHistoriSpp, role);
+    } else {
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">Belum ada riwayat transaksi.</td></tr>`;
+    }
+  } catch (error) {
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Gagal menghubungi server database.</td></tr>`;
+  }
+}
+
+function renderTabelSpp(arrData, role) {
+  const tbody = document.getElementById("data-histori-spp");
+  if(!tbody) return;
   
-  if (dataList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="12" class="text-center text-muted">Tidak ditemukan riwayat catatan transaksi pembayaran SPP.</td></tr>`;
+  if(arrData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-3 small">Data transaksi tidak ditemukan.</td></tr>`;
     return;
   }
-  
-  const role = userSession.role.toLowerCase();
+
   let html = "";
-  
-  dataList.forEach(row => {
-    let statusBadge = "";
-    if (row.status === "Pending") statusBadge = `<span class="badge bg-warning text-dark">Pending</span>`;
-    else if (row.status === "Berhasil") statusBadge = `<span class="badge bg-success">Berhasil</span>`;
-    else statusBadge = `<span class="badge bg-danger">${row.status}</span>`;
-    
-    let linkBukti = row.buktiUrl && row.buktiUrl !== "-" 
-      ? `<a href="${row.buktiUrl}" target="_blank" class="btn btn-xs btn-outline-info p-1 py-0" style="font-size:11px;"><i class="fas fa-image"></i> Lihat</a>` 
-      : `<span class="text-muted">-</span>`;
-      
-    let nominalFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.nominal);
-    
-    // Tombol aksi manajemen khusus Admin
-    let btnAksi = `<span class="text-muted">No Action</span>`;
-    if (role === 'admin' && row.status === "Pending") {
-      btnAksi = `
-        <div class="d-flex gap-1">
-          <button class="btn btn-success btn-sm p-1 py-0 text-white" title="Setujui" onclick="aksiApprovalSpp('${row.id}', 'Berhasil')"><i class="fas fa-check"></i></button>
-          <button class="btn btn-danger btn-sm p-1 py-0 text-white" title="Tolak" onclick="aksiApprovalSpp('${row.id}', 'Ditolak')"><i class="fas fa-times"></i></button>
-        </div>
-      `;
-    } else if (role === 'admin' && row.status === "Berhasil") {
-      btnAksi = `<span class="text-success fw-bold"><i class="fas fa-check-double"></i> Verified</span>`;
-    } else if (role === 'admin' && row.status === "Ditolak") {
-      btnAksi = `<span class="text-danger"><i class="fas fa-ban"></i> Rejected</span>`;
+  arrData.forEach(item => {
+    let tanggalFix = "-";
+    if (item.tanggal) {
+      if (typeof item.tanggal === 'object' && item.tanggal.value) {
+        tanggalFix = item.tanggal.value;
+      } else if (typeof item.tanggal === 'string') {
+        tanggalFix = item.tanggal.replace("T", " ").substring(0, 16);
+      } else {
+        tanggalFix = item.tanggal.toString();
+      }
     }
-    
-    // Cetak Kwitansi
-    let btnKwitansi = `<button class="btn btn-sm btn-light text-primary border" onclick="cetakKwitansiLokal(${JSON.stringify(row).bgEscapeHtml()})"><i class="fas fa-print"></i> PDF</button>`;
-    
-    // Parsing Tanggal rapi
-    let tglTampil = row.tanggal;
-    
+
+    let badge = `<span class="badge bg-success">Berhasil</span>`;
+    if(item.status === "Pending" || item.status === "Menunggu Persetujuan") {
+      badge = `<span class="badge bg-warning text-dark">Pending</span>`;
+    } else if(item.status === "Gagal" || item.status === "Ditolak") {
+      badge = `<span class="badge bg-danger">Gagal</span>`;
+    }
+
+    let linkBukti = "-";
+    if(item.buktiUrl && item.buktiUrl.startsWith("http")) {
+      linkBukti = `<a href="${item.buktiUrl}" target="_blank" class="btn btn-xs btn-outline-primary py-0 px-1" style="font-size:11px;"><i class="fas fa-image"></i> Lihat</a>`;
+    }
+
+    let metodeBayar = item.metode || item.jenis_pembayaran || "-";
+
+    let encodedData = encodeURIComponent(JSON.stringify(item));
+
+    let kolomAksiAdmin = "";
+    let kolomKwitansiTerpisah = "";
+
+    if (role === "admin") {
+      if (item.status === "Pending" || item.status === "Menunggu Persetujuan") {
+        kolomAksiAdmin = `
+          <td class="text-center text-nowrap">
+            <button class="btn btn-xs btn-success py-0 px-1 me-1" title="Setujui" onclick="eksekusiApprovalSpp('${item.id}', 'Berhasil')"><i class="fa fa-check"></i></button>
+            <button class="btn btn-xs btn-danger py-0 px-1" title="Tolak" onclick="eksekusiApprovalSpp('${item.id}', 'Gagal')"><i class="fa fa-times"></i></button>
+          </td>`;
+      } else {
+        kolomAksiAdmin = `<td class="text-center text-muted small">-</td>`;
+      }
+
+      kolomKwitansiTerpisah = `
+        <td class="text-center">
+          <button class="btn btn-xs btn-primary py-0 px-2 shadow-sm text-nowrap" style="font-size:11px;" onclick="jembatanCetakKwitansi('${encodedData}')">
+            <i class="fa fa-receipt me-1"></i> Kwitansi
+          </button>
+        </td>`;
+
+    } else {
+
+      kolomAksiAdmin = `<td class="text-center text-muted small">-</td>`;
+      
+      kolomKwitansiTerpisah = `
+        <td class="text-center">
+          ${item.status === 'Berhasil' ? 
+            `<button class="btn btn-xs btn-primary py-0 px-2 text-nowrap" style="font-size:11px;" onclick="jembatanCetakKwitansi('${encodedData}')"><i class="fa fa-print me-1"></i> Cetak</button>` 
+            : `<span class="text-muted small">-</span>`
+          }
+        </td>`;
+    }
+
     html += `
       <tr>
-        <td>${tglTampil}</td>
-        <td class="fw-bold">${row.nis}</td>
-        <td>${row.nama}</td>
-        <td><small class="badge bg-secondary">${row.unit}</small> / ${row.kelas}</td>
-        <td>${row.bulan}</td>
-        <td>${row.tahun}</td>
-        <td class="fw-bold text-end">${nominalFormatted}</td>
-        <td>${row.metode}</td>
+        <td><small>${tanggalFix}</small></td>
+        <td class="fw-bold">${item.nis || '-'}</td>
+        <td><strong>${item.nama || '-'}</strong></td>
+        <td><small>${item.unit || '-'} / ${item.kelas || '-'}</small></td>
+        <td><span class="text-primary fw-bold">${item.bulan || '-'}</span></td>
+        <td class="text-end fw-bold">Rp ${(Number(item.nominal) || 0).toLocaleString('id-ID')}</td>
+        <td><small class="text-muted">${metodeBayar}</small></td>
         <td class="text-center">${linkBukti}</td>
-        <td class="text-center">${statusBadge}</td>
-        <td>${btnAksi}</td>
-        <td class="text-center">${btnKwitansi}</td>
+        <td class="text-center">${badge}</td>
+        ${kolomAksiAdmin}
+        ${kolomKwitansiTerpisah}
       </tr>
     `;
   });
@@ -1200,158 +1151,161 @@ function renderTabelSPPLokal(dataList) {
   tbody.innerHTML = html;
 }
 
-// Prototype helper mengamankan string JSON dalam parameter onclick HTML
-String.prototype.bgEscapeHtml = function() {
-  return this.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-};
-
-// 8. Fungsi Eksekusi Konfirmasi Persetujuan Admin SPP
-async function aksiApprovalSpp(idBayar, statusBaru) {
-  if (!confirm(`Apakah Anda yakin ingin merubah status pembayaran ini menjadi: [${statusBaru}] ?`)) return;
-  
+function jembatanCetakKwitansi(encodedStr) {
   try {
-    const res = await callGAS("approveBayarSPP", { idBayar: idBayar, statusBaru: statusBaru });
-    if (res && res.success) {
+    const decodedObj = JSON.parse(decodeURIComponent(encodedStr));
+    cetakKwitansiSatuan(decodedObj);
+  } catch (error) {
+    console.error("Gagal membaca objek kwitansi:", error);
+    alert("Terjadi kesalahan sistem saat memproses data baris ini.");
+  }
+}
+	
+async function eksekusiApprovalSpp(idBayar, statusTarget) {
+  if(!confirm(`Apakah Anda yakin ingin menandai transaksi ini sebagai ${statusTarget}?`)) return;
+  try {
+    const res = await callGAS("approveBayarSPP", { idBayar: idBayar, statusBaru: statusTarget });
+    if(res && res.success) {
       alert(res.message);
       muatUlangHistori();
     } else {
-      alert("Gagal merubah status transaksi: " + res.message);
+      alert("Gagal memperbarui status: " + res.message);
     }
-  } catch (e) {
-    alert("Koneksi gagal: " + e.message);
+  } catch(e) { alert("Terjadi kesalahan sistem."); }
+}
+
+function saringTabelLokal() {
+  const fUnit = document.getElementById("filter-spp-unit").value.toLowerCase();
+  const fKelas = document.getElementById("filter-spp-kelas").value.toLowerCase();
+  const role = userSession.role.toLowerCase();
+
+  let hasilSaring = cacheHistoriSpp;
+
+  if (fUnit) {
+    hasilSaring = hasilSaring.filter(x => x.unit && x.unit.toLowerCase() === fUnit);
+  }
+  if (fKelas) {
+    hasilSaring = hasilSaring.filter(x => x.kelas && x.kelas.toLowerCase() === fKelas);
+  }
+
+  renderTabelSpp(hasilSaring, role);
+}
+
+function clearFormSiswa() {
+  if(document.getElementById("spp-nama")) document.getElementById("spp-nama").value = "";
+  if(document.getElementById("spp-unit")) document.getElementById("spp-unit").value = "";
+  if(document.getElementById("spp-kelas")) document.getElementById("spp-kelas").value = "";
+}
+
+function toggleUploadBukti() {
+  const role = userSession.role.toLowerCase();
+  if (role === 'siswa') return;
+
+  const metode = document.getElementById("spp-metode").value;
+  const rowBukti = document.getElementById("row-bukti-transfer");
+  if (!rowBukti) return;
+  
+  if (metode && metode.startsWith("Transfer")) {
+    rowBukti.classList.remove("d-none");
+  } else {
+    rowBukti.classList.add("d-none");
+    document.getElementById("spp-file").value = "";
   }
 }
 
-// 9. Fungsi Saring / Filter Pencarian Lokal Realtime (Nama, NIS, Unit, Kelas)
-function saringTabelLokal() {
-  const keyword = document.getElementById("cari-spp-admin").value.toLowerCase().trim();
-  const fUnit = document.getElementById("filter-spp-unit").value;
-  const fKelas = document.getElementById("filter-spp-kelas").value;
-  
-  let hasilSaring = cacheHistoriSpp.filter(item => {
-    const matchKeyword = !keyword || 
-                         (item.nama && item.nama.toLowerCase().includes(keyword)) || 
-                         (item.nis && item.nis.toString().toLowerCase().includes(keyword)) ||
-                         (item.id && item.id.toLowerCase().includes(keyword));
-                         
-    const matchUnit = !fUnit || (item.unit === fUnit);
-    const matchKelas = !fKelas || (item.kelas === fKelas);
-    
-    return matchKeyword && matchUnit && matchKelas;
-  });
-  
-  renderTabelSPPLokal(hasilSaring);
+function muatUlangHistori() {
+  const role = userSession.role.toLowerCase();
+  if (role === "admin") {
+    loadHistoriSPP("");
+  } else {
+    const inputNis = document.getElementById("spp-nis").value;
+    loadHistoriSPP(inputNis && inputNis !== "Memuat NIS..." ? inputNis : userSession.u);
+  }
 }
 
-// 10. Fitur Cetak Struk Kwitansi Pembayaran Menggunakan jsPDF bawaan aplikasi
-function cetakKwitansiLokal(dataRow) {
-  if (!dataRow) return alert("Data Transaksi Tidak Valid");
+function cariHistoriAdmin() {
+  const keyword = document.getElementById("cari-spp-admin").value.trim();
+  loadHistoriSPP(keyword);
+}
+
+ function saringTabelLokal() {
+  const fUnit = document.getElementById("filter-spp-unit").value.toLowerCase();
+  const fKelas = document.getElementById("filter-spp-kelas").value.toLowerCase();
+  const kWord = document.getElementById("cari-spp-admin").value.toLowerCase().trim();
+  const role = userSession.role.toLowerCase();
+
+  let hasilSaring = cacheHistoriSpp;
+
+  if (fUnit) {
+    hasilSaring = hasilSaring.filter(x => x.unit && x.unit.toLowerCase() === fUnit);
+  }
+  if (fKelas) {
+    hasilSaring = hasilSaring.filter(x => x.kelas && x.kelas.toLowerCase() === fKelas);
+  }
+  if (kWord) {
+    hasilSaring = hasilSaring.filter(x => 
+      (x.nama && x.nama.toLowerCase().includes(kWord)) || 
+      (x.nis && x.nis.toString().includes(kWord)) ||
+      (x.bulan && x.bulan.toLowerCase().includes(kWord))
+    );
+  }
+
+  renderTabelSpp(hasilSaring, role);
+}
+
+function exportSPPToExcel() {
+  if (!cacheHistoriSpp || cacheHistoriSpp.length === 0) return alert("Tidak ada data untuk diexport!");
   
-  const { jsPDF } = window.jspdf;
-  // Set dokumen ukuran struk / A5 lanskap (210mm x 148mm)
-  const doc = new jsPDF('l', 'mm', 'a5');
-  const pageWidth = doc.internal.pageSize.getWidth();
-  
-  // Design Kop Surat / Kwitansi
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(33, 37, 41);
-  doc.text("YAYASAN PENDIDIKAN AL-ISHLAH", pageWidth / 2, 12, { align: "center" });
-  
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text("Jl. Selayar, Kel. Liluwo, Kec. Kota Tengah, Gorontalo - Telp: (0435) 830969", pageWidth / 2, 16, { align: "center" });
-  
-  doc.setLineWidth(0.4);
-  doc.setDrawColor(33, 37, 41);
-  doc.line(10, 19, pageWidth - 10, 19);
-  
-  // Judul Dokumen Kwitansi
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("TANDA BUKTI PEMBAYARAN SPP (KWITANSI)", pageWidth / 2, 26, { align: "center" });
-  
-  // Kotak Konten Informasi
-  let startY = 34;
-  const rowHeight = 6.5;
-  const colXLabel = 14;
-  const colXTitik = 55;
-  const colXValue = 58;
-  
-  const infoFields = [
-    { label: "Nomor Transaksi", val: dataRow.id },
-    { label: "Waktu Pembayaran", val: dataRow.tanggal },
-    { label: "NIS Siswa", val: dataRow.nis },
-    { label: "Nama Lengkap Siswa", val: dataRow.nama },
-    { label: "Unit / Kelas", val: `${dataRow.unit} / ${dataRow.kelas}` },
-    { label: "Pembayaran Untuk", val: `SPP Bulan ${dataRow.bulan} Tahun ${dataRow.tahun}` },
-    { label: "Metode Pembayaran", val: dataRow.metode },
-    { label: "Status Verifikasi", val: dataRow.status === "Berhasil" ? "LUNAS / DISETUJUI" : dataRow.status.toUpperCase() }
+  const fUnit = document.getElementById("filter-spp-unit").value.toLowerCase();
+  const fKelas = document.getElementById("filter-spp-kelas").value.toLowerCase();
+  const kWord = document.getElementById("cari-spp-admin").value.toLowerCase().trim();
+
+  let dataExport = cacheHistoriSpp.filter(x => {
+    let matchUnit = !fUnit || (x.unit && x.unit.toLowerCase() === fUnit);
+    let matchKelas = !fKelas || (x.kelas && x.kelas.toLowerCase() === fKelas);
+    let matchKey = !kWord || (x.nama && x.nama.toLowerCase().includes(kWord)) || (x.nis && x.nis.toString().includes(kWord));
+    return matchUnit && matchKelas && matchKey;
+  });
+
+  let rows = [
+    ["LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA"],
+    ["YAYASAN PENDIDIKAN AL-ISHLAH GORONTALO"],
+    ["Tanggal Unduh: " + new Date().toLocaleString('id-ID')],
+    [], 
+    ["No", "Tanggal Transaksi", "NIS", "Nama Siswa", "Unit", "Kelas", "Bulan Tagihan", "Nominal (Rp)", "Metode Pembayaran", "Status"]
   ];
   
-  infoFields.forEach(item => {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(item.label, colXLabel, startY);
-    doc.text(":", colXTitik, startY);
-    
-    if (item.label === "Status Verifikasi" && dataRow.status === "Berhasil") {
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(25, 135, 84); // Hijau Lunas
-    } else {
-      doc.setTextColor(0, 0, 0);
+  dataExport.forEach((r, idx) => {
+    // Pembersihan Format Tanggal untuk Excel
+    let tglClean = "-";
+    if (r.tanggal) {
+      if (typeof r.tanggal === 'object' && r.tanggal.value) {
+        tglClean = r.tanggal.value.toString();
+      } else if (typeof r.tanggal === 'string') {
+        tglClean = r.tanggal.replace("T", " ").substring(0, 16);
+      } else {
+        tglClean = r.tanggal.toString();
+      }
     }
-    
-    doc.text(item.val.toString(), colXValue, startY);
-    startY += rowHeight;
+
+    rows.push([
+      idx + 1,
+      tglClean,
+      r.nis ? r.nis.toString() : "-",
+      r.nama || "-",
+      r.unit || "-",
+      r.kelas || "-",
+      r.bulan || "-",
+      r.nominal ? Number(r.nominal) : 0,
+      r.metode || r.jenis_pembayaran || "-",
+      r.status || "-"
+    ]);
   });
   
-  // Draw total box
-  startY += 2;
-  doc.setFillColor(240, 244, 253);
-  doc.setDrawColor(13, 110, 253);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(12, startY, pageWidth - 24, 11, 1, 1, "FD");
-  
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(13, 110, 253);
-  let nominalFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(dataRow.nominal);
-  doc.text(`TOTAL BAYAR:  ${nominalFormatted},-`, 16, startY + 7);
-  
-  // Tanda Tangan Keluar / Catatan Autogenerate
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
-  doc.setTextColor(108, 117, 125);
-  doc.text(`Kwitansi ini dicetak otomatis secara sah oleh MySchool PRO System pada tanggal ${new Date().toLocaleDateString('id-ID')}.`, 12, startY + 18);
-  
-  // Trigger Simpan / Unduh Berkas Kwitansi PDF
-  doc.save(`Kwitansi_SPP_${dataRow.id}_${dataRow.nis}.pdf`);
-}
-
-// 11. Fungsi Export Laporan Rekapitulasi SPP ke Microsoft Excel (.xlsx)
-function exportSPPToExcel() {
-  if(cacheHistoriSpp.length === 0) return alert("Tidak ada data untuk diekspor!");
-  
-  const dataExport = cacheHistoriSpp.map((r, i) => ({
-    "No": i + 1,
-    "ID Transaksi": r.id,
-    "Tanggal": r.tanggal,
-    "NIS": r.nis,
-    "Nama Siswa": r.nama,
-    "Unit": r.unit,
-    "Kelas": r.kelas,
-    "Bulan Tagihan": r.bulan,
-    "Tahun Tagihan": r.tahun,
-    "Nominal": r.nominal,
-    "Metode": r.metode,
-    "Status": r.status
-  }));
-  
-  const ws = XLSX.utils.json_to_sheet(dataExport);
-  const wb = XLSX.utils.book_new();
+  let wb = XLSX.utils.book_new();
+  let ws = XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, "Rekap_SPP");
-  XLSX.writeFile(wb, `Laporan_SPP_MySchool_${new Date().getTime()}.xlsx`);
+  XLSX.writeFile(wb, "Rekap_SPP_AlIshlah_" + new Date().toISOString().slice(0,10) + ".xlsx");
 }
 
 function exportSPPToPDF() {
@@ -1418,7 +1372,7 @@ function exportSPPToPDF() {
 
   doc.autoTable({
     startY: 40,
-    head: [["No", "Tanggal", "NIS", "Nama Siswa", "Unit/Kelas", "Bulan Tagihan", "Tahun Tagihan", "Nominal", "Metode", "Status"]],
+    head: [["No", "Tanggal", "NIS", "Nama Siswa", "Unit/Kelas", "Bulan Tagihan", "Nominal", "Metode", "Status"]],
     body: tableBody,
     theme: 'striped',
     headStyles: { fillColor: [13, 110, 253] }, 
@@ -1463,7 +1417,7 @@ function printSPPTable() {
   pWin.document.write('<h3>LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA</h3>');
   pWin.document.write('<p style="font-size:11px; color:#555;">Tanggal Unduh Sistem: ' + new Date().toLocaleString('id-ID') + '</p>');
   
-  pWin.document.write('<table><thead><tr><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama Siswa</th><th>Unit/Kelas</th><th>Bulan</th><th>Tahun</th><th class="text-right">Nominal</th><th>Metode</th><th>Status</th></tr></thead><tbody>');
+  pWin.document.write('<table><thead><tr><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama Siswa</th><th>Unit/Kelas</th><th>Bulan</th><th class="text-right">Nominal</th><th>Metode</th><th>Status</th></tr></thead><tbody>');
   
   filtered.forEach((item, idx) => {
 
@@ -1486,7 +1440,6 @@ function printSPPTable() {
       <td><strong>${item.nama || '-'}</strong></td>
       <td>${item.unit || '-'} / ${item.kelas || '-'}</td>
       <td>${item.bulan || '-'}</td>
-	  <td>${item.tahun || '-'}</td>
       <td class="text-right">Rp ${(Number(item.nominal) || 0).toLocaleString('id-ID')}</td>
       <td>${metode}</td>
       <td>${item.status || '-'}</td>
