@@ -602,6 +602,7 @@
                               <th>Nama Siswa</th>
                               <th>Unit / Kelas</th>
                               <th>Bulan</th>
+							  <th>Tahun</th>
                               <th>Nominal</th>
                               <th>Metode</th>
                               <th>Bukti</th>
@@ -632,7 +633,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwoVuOlc4HzHcLV4TAjhDk9ell24ZnUHOi4N4R5hGKjlCBNeKPNlv-od6zq2VKg4LQ4cw/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwT15hKbhP526bkCWWMa2SmSx30S82iXlC0SewAHbjco04nBMdk0DWAErC3klmALTyqBA/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -990,8 +991,13 @@ function convertFileToBase64(file) {
 
 async function handleBayarSPP(event) {
   event.preventDefault();
+  
+  if (typeof userSession === "undefined" || !userSession.role) {
+    alert("Sesi berakhir, silakan refresh halaman.");
+    return;
+  }
+  
   const role = userSession.role.toLowerCase();
-
   const loadingSpinner = document.getElementById("spp-loading");
   const btnSimpan = document.getElementById("btn-simpan-spp");
   
@@ -1000,6 +1006,7 @@ async function handleBayarSPP(event) {
 
   let fileObj = { base64: "", name: "" };
   const fileInput = document.getElementById("spp-file");
+  
   if (fileInput && fileInput.files.length > 0) {
     const file = fileInput.files[0];
     try {
@@ -1015,23 +1022,25 @@ async function handleBayarSPP(event) {
   }
 
   let statusTransaksi = (role === "admin") ? "Berhasil" : "Pending";
-  
   let nisValue = document.getElementById("spp-nis").value.trim();
+  
   if ((!nisValue || nisValue === "Memuat NIS...") && role === "siswa") {
-    nisValue = userSession.u || userSession.username || "";
+    nisValue = userSession.nis || userSession.username || "";
   }
 
-  const dataPayload = {
-    nis: nisValue,
-    nama: document.getElementById("spp-nama").value,
-    unit: document.getElementById("spp-unit").value,
-    kelas: document.getElementById("spp-kelas").value,
-    bulan: document.getElementById("spp-bulan").value,
-    nominal: document.getElementById("spp-nominal").value,
-    jenis_pembayaran: document.getElementById("spp-metode").value,
-    status: statusTransaksi,
-    buktiBase64: fileObj.base64,
-    buktiNamaFile: fileObj.name
+  // PAYLOAD DATA LENGKAP MENGIKUTI STRUKTUR FORM & DB BARU
+  const dataPayload = { 
+    nis: nisValue, 
+    nama: document.getElementById("spp-nama").value, 
+    unit: document.getElementById("spp-unit").value, 
+    kelas: document.getElementById("spp-kelas").value, 
+    bulan: document.getElementById("spp-bulan").value, 
+    tahun: document.getElementById("spp-tahun").value, // <-- Menangkap nilai Tahun dari Form dropdown
+    nominal: document.getElementById("spp-nominal").value, 
+    jenis_pembayaran: document.getElementById("spp-metode").value, 
+    status: statusTransaksi, 
+    buktiBase64: fileObj.base64, 
+    buktiNamaFile: fileObj.name 
   };
 
   if (role === "siswa") {
@@ -1042,14 +1051,13 @@ async function handleBayarSPP(event) {
   try {
     const res = await callGAS("prosesBayarSPP", dataPayload);
     if (res && res.success) {
-      alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "pembayaran berhasil terkirim! Silakan tunggu verifikasi admin.");
-      inisialisasiMenuSPP(); 
+      alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "Pembayaran berhasil terkirim! Menunggu verifikasi admin.");
+      inisialisasiMenuSPP(); // Memuat ulang dan mengosongkan form
     } else {
-      alert("Gagal menyimpan: " + (res.message || "Terjadi kesalahan backend."));
+      alert("Gagal menyimpan: " + (res.message || "Terjadi kesalahan"));
     }
-  } catch (error) {
-    console.error(error);
-    alert("Sistem gagal terhubung ke backend Google Sheets.");
+  } catch (errSubmit) {
+    alert("Koneksi Error: " + errSubmit.message);
   } finally {
     if (loadingSpinner) loadingSpinner.classList.add("d-none");
     if (btnSimpan) btnSimpan.disabled = false;
