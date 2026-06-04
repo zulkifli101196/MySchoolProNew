@@ -530,7 +530,7 @@
                       </div>
                       <div class="col-md-3">
                           <label class="form-label fw-bold">Nominal Pembayaran (Rp)</label>
-                          <input type="number" id="spp-nominal" class="form-control" placeholder="Cth: 250000" required>
+                          <input type="number" id="spp-nominal" class="form-control" placeholder="Cth: 450000" required>
                       </div>
                       <div class="col-md-3">
                           <label class="form-label fw-bold">Metode / Jenis Pembayaran</label>
@@ -633,7 +633,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwT15hKbhP526bkCWWMa2SmSx30S82iXlC0SewAHbjco04nBMdk0DWAErC3klmALTyqBA/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzMvioHBfgf87AW_W42mur2aL2e-cnQwU0wmf8TA5RSFCkhVwOA2sgn-0j91sGwfjJvIA/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -662,16 +662,12 @@
 async function muatProfilSekolah() {
   const logoImg = document.getElementById("login-logo");
   const sidebarLogoImg = document.getElementById("sidebar-logo");
-
-  // 1. AMBIL DARI CACHE BROWSER (INSTAN JIKA SUDAH ADA)
   const cachedLogo = localStorage.getItem("myschool_logo_cache");
   if (cachedLogo) {
-    // Isi logo login jika elemennya ditemukan di halaman
     if (logoImg) {
       logoImg.src = cachedLogo;
       logoImg.style.display = "block";
     }
-    // Isi logo sidebar jika elemennya ditemukan di halaman
     if (sidebarLogoImg) {
       sidebarLogoImg.src = cachedLogo;
       sidebarLogoImg.style.display = "block";
@@ -679,14 +675,11 @@ async function muatProfilSekolah() {
   }
 
   try {
-    // 2. AMBIL DATA TERBARU DARI SERVER GOOGLE (LATAR BELAKANG)
     const res = await callGAS("getProfilSekolah");
 
     if (res && res.logo) {
-      // Simpan ke memori lokal untuk pemuatan berikutnya
       localStorage.setItem("myschool_logo_cache", res.logo);
       
-      // Update secara real-time jika logo berbeda dengan cache
       if (cachedLogo !== res.logo) {
         if (logoImg) {
           logoImg.src = res.logo;
@@ -703,7 +696,6 @@ async function muatProfilSekolah() {
   }
 }
 
-// Jalankan otomatis saat halaman siap
 window.addEventListener("DOMContentLoaded", () => {
   muatProfilSekolah();
 });
@@ -906,7 +898,6 @@ async function inisialisasiMenuSPP() {
     if (panelAdmin) panelAdmin.classList.add("d-none");
     if (thAksiAdmin) thAksiAdmin.classList.add("d-none");
 
-    // Gunakan data dari userSession yang sudah diperbarui
     if (inputNis) {
       inputNis.value = userSession.nis || "-"; 
       inputNis.readOnly = true; 
@@ -1028,14 +1019,13 @@ async function handleBayarSPP(event) {
     nisValue = userSession.nis || userSession.username || "";
   }
 
-  // PAYLOAD DATA LENGKAP MENGIKUTI STRUKTUR FORM & DB BARU
   const dataPayload = { 
     nis: nisValue, 
     nama: document.getElementById("spp-nama").value, 
     unit: document.getElementById("spp-unit").value, 
     kelas: document.getElementById("spp-kelas").value, 
     bulan: document.getElementById("spp-bulan").value, 
-    tahun: document.getElementById("spp-tahun").value, // <-- Menangkap nilai Tahun dari Form dropdown
+    tahun: document.getElementById("spp-tahun").value,
     nominal: document.getElementById("spp-nominal").value, 
     jenis_pembayaran: document.getElementById("spp-metode").value, 
     status: statusTransaksi, 
@@ -1052,7 +1042,7 @@ async function handleBayarSPP(event) {
     const res = await callGAS("prosesBayarSPP", dataPayload);
     if (res && res.success) {
       alert(role === "admin" ? "Pembayaran SPP sukses disimpan ke database!" : "Pembayaran berhasil terkirim! Menunggu verifikasi admin.");
-      inisialisasiMenuSPP(); // Memuat ulang dan mengosongkan form
+      inisialisasiMenuSPP();
     } else {
       alert("Gagal menyimpan: " + (res.message || "Terjadi kesalahan"));
     }
@@ -1164,6 +1154,7 @@ function renderTabelSpp(arrData, role) {
         <td><strong>${item.nama || '-'}</strong></td>
         <td><small>${item.unit || '-'} / ${item.kelas || '-'}</small></td>
         <td><span class="text-primary fw-bold">${item.bulan || '-'}</span></td>
+		<td><span class="text-primary fw-bold">${item.tahun || '-'}</span></td>
         <td class="text-end fw-bold">Rp ${(Number(item.nominal) || 0).toLocaleString('id-ID')}</td>
         <td><small class="text-muted">${metodeBayar}</small></td>
         <td class="text-center">${linkBukti}</td>
@@ -1225,22 +1216,18 @@ function clearFormSiswa() {
 
 function toggleUploadBukti() {
   const role = userSession.role.toLowerCase();
-  // Jika siswa, biasanya logika upload diatur terpisah atau selalu muncul saat bayar mandiri. 
-  // Namun baris ini tetap dipertahankan sesuai struktur kode asli Anda.
   if (role === 'siswa') return; 
-
   const metode = document.getElementById("spp-metode").value;
   const rowBukti = document.getElementById("row-bukti-transfer");
   if (!rowBukti) return;
   
-  // PERBAIKAN: Jika metode diisi DAN metode tersebut BUKAN "Tunai", tampilkan upload bukti
   if (metode && metode !== "Tunai") {
     rowBukti.classList.remove("d-none");
-    document.getElementById("spp-file").setAttribute("required", "required"); // Opsional: membuat input file menjadi wajib diisi secara HTML5
+    document.getElementById("spp-file").setAttribute("required", "required");
   } else {
     rowBukti.classList.add("d-none");
     document.getElementById("spp-file").value = "";
-    document.getElementById("spp-file").removeAttribute("required"); // Menghapus validasi wajib jika metodenya Tunai
+    document.getElementById("spp-file").removeAttribute("required");
   }
 }
 	
@@ -1303,11 +1290,10 @@ function exportSPPToExcel() {
     ["YAYASAN PENDIDIKAN AL-ISHLAH GORONTALO"],
     ["Tanggal Unduh: " + new Date().toLocaleString('id-ID')],
     [], 
-    ["No", "Tanggal Transaksi", "NIS", "Nama Siswa", "Unit", "Kelas", "Bulan Tagihan", "Nominal (Rp)", "Metode Pembayaran", "Status"]
+    ["No", "Tanggal Transaksi", "NIS", "Nama Siswa", "Unit", "Kelas", "Bulan Tagihan", "Tahun Tagihan", "Nominal (Rp)", "Metode Pembayaran", "Status"]
   ];
   
   dataExport.forEach((r, idx) => {
-    // Pembersihan Format Tanggal untuk Excel
     let tglClean = "-";
     if (r.tanggal) {
       if (typeof r.tanggal === 'object' && r.tanggal.value) {
@@ -1327,6 +1313,7 @@ function exportSPPToExcel() {
       r.unit || "-",
       r.kelas || "-",
       r.bulan || "-",
+	  r.tahun || "-",
       r.nominal ? Number(r.nominal) : 0,
       r.metode || r.jenis_pembayaran || "-",
       r.status || "-"
@@ -1395,6 +1382,7 @@ function exportSPPToPDF() {
       item.nama || '-',
       `${item.unit || '-'} / ${item.kelas || '-'}`,
       item.bulan || '-',
+	  item.tahun || '-',
       "Rp " + (Number(item.nominal) || 0).toLocaleString('id-ID'),
       item.metode || item.jenis_pembayaran || "-",
       item.status || '-'
@@ -1471,6 +1459,7 @@ function printSPPTable() {
       <td><strong>${item.nama || '-'}</strong></td>
       <td>${item.unit || '-'} / ${item.kelas || '-'}</td>
       <td>${item.bulan || '-'}</td>
+	  <td>${item.tahun || '-'}</td>
       <td class="text-right">Rp ${(Number(item.nominal) || 0).toLocaleString('id-ID')}</td>
       <td>${metode}</td>
       <td>${item.status || '-'}</td>
