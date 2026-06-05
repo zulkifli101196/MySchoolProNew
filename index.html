@@ -166,7 +166,7 @@
     <div class="p-4">
   <section id="sc-home">
     <div class="row g-3 mb-4">
-      <div class="col-md-6">
+      <div class="col-md-12">
         <div class="glass-card bg-primary text-white py-4 border-0 shadow-sm position-relative overflow-hidden">
           <div class="position-relative z-1 px-3">
             <h1 id="clock" class="fw-800 display-4 mb-0">00:00</h1>
@@ -435,7 +435,7 @@
           </select>
         </div>
         <div class="col-md-2">
-          <button class="btn btn-sm btn-success w-100 fw-bold shadow-sm" onclick="submitPresensiSiswaMasal()">
+          <button class="btn btn-sm btn-primary w-100 fw-bold shadow-sm" onclick="submitPresensiSiswaMasal()">
             <i class="fa fa-save me-1"></i> Simpan Presensi
           </button>
         </div>
@@ -633,7 +633,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   /* GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA */
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyRmfqDLSb6sm35fr0exYXeFjj3opGgIZG4ZOhIekq7dpx-Z1HqQjNhQNhr20Rc9ZGg7g/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyQZ2mYqTatHEUCVSsej9icWhKsUmyrE_ZfJc5tE0X2RiGQ51o20msBL1KaTWXEsTg2/exec";
 
   let userSession = {}, currentTable = '', editIdx = null, img64 = "", loc = {lat:0, long:0}, chartInstance = null, userChartInstance = null, refData = {};
   let isModelsLoaded = false, faceMatcher = null, streamActive = null, currentRegUser = null, currentRegSource = null;
@@ -1391,7 +1391,7 @@ function exportSPPToPDF() {
 
   doc.autoTable({
     startY: 40,
-    head: [["No", "Tanggal", "NIS", "Nama Siswa", "Unit/Kelas", "Bulan Tagihan", "Nominal", "Metode", "Status"]],
+    head: [["No", "Tanggal", "NIS", "Nama Siswa", "Unit/Kelas", "Bulan Tagihan", "Tahun Tagihan", "Nominal", "Metode", "Status"]],
     body: tableBody,
     theme: 'striped',
     headStyles: { fillColor: [13, 110, 253] }, 
@@ -1436,7 +1436,7 @@ function printSPPTable() {
   pWin.document.write('<h3>LAPORAN REKAPITULASI PEMBAYARAN SPP SISWA</h3>');
   pWin.document.write('<p style="font-size:11px; color:#555;">Tanggal Unduh Sistem: ' + new Date().toLocaleString('id-ID') + '</p>');
   
-  pWin.document.write('<table><thead><tr><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama Siswa</th><th>Unit/Kelas</th><th>Bulan</th><th class="text-right">Nominal</th><th>Metode</th><th>Status</th></tr></thead><tbody>');
+  pWin.document.write('<table><thead><tr><th>No</th><th>Tanggal</th><th>NIS</th><th>Nama Siswa</th><th>Unit/Kelas</th><th>Bulan</th><th>Tahun</th><th class="text-right">Nominal</th><th>Metode</th><th>Status</th></tr></thead><tbody>');
   
   filtered.forEach((item, idx) => {
 
